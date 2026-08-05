@@ -1,0 +1,80 @@
+# ==========================================
+# Node / Vite / Web Dependencies & Builds
+# ==========================================
+node_modules/
+.pnpm-store/
+.yarn/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite cache
+.vite/
+
+# ==========================================
+# Rust / Tauri Builds & Artifacts
+# ==========================================
+# Rust compilation output (CRITICAL - prevents multi-GB repo bloat)
+src-tauri/target/
+
+# Local database files created during dev testing (redb / sqlite)
+*.redb
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Tauri build bundles
+src-tauri/gen/
+
+# ==========================================
+# Editor & IDE Configs
+# ==========================================
+# Zed Editor (project-specific task history and local overrides)
+.zed/tasks.json
+.zed/settings.json
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains / RustRover
+.idea/
+*.iws
+*.iml
+
+# Vim / Helix
+*.swp
+*~
+.helix/
+
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
+.env
+.env.local
+.env.*.local
+
+# ==========================================
+# OS Generated Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# ==========================================
+# Testing & Coverage
+# ==========================================
+coverage/
+.nyc_output/

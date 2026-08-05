@@ -1,0 +1,843 @@
+@use './tokens' as *;
+@use './reset' as *;
+
+// ── App shell ─────────────────────────────────────────────────────────────────
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+// ── Top bar ───────────────────────────────────────────────────────────────────
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-5 $space-8;
+  flex-shrink: 0;
+
+  &__greeting {
+    font-size: $text-lg;
+    font-weight: 500;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+
+    span {
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+}
+
+// ── Icon button ───────────────────────────────────────────────────────────────
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+  }
+
+  svg { width: 18px; height: 18px; }
+}
+
+// ── Main content ──────────────────────────────────────────────────
+.main-content {
+    width: 100%;
+    max-width: 1280px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+}
+
+// ── Entry area (center hero) ──────────────────────────────────────────────────
+
+.entry-area {
+  padding: $space-4 $space-8 $space-6;
+  flex-shrink: 0;
+  max-width: 1280px;
+  width: 100%;
+
+  &__inner {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-xl;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &:focus-within {
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  &__textarea {
+    width: 100%;
+    padding: $space-5 $space-6;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: $text-base;
+    font-family: $font-main;
+    color: var(--text-primary);
+    line-height: 1.65;
+    min-height: 80px;
+    max-height: 160px;
+
+    &::placeholder {
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-3 $space-6;
+    border-top: 1px solid var(--border);
+  }
+
+  &__hint {
+    font-size: $text-xs;
+    color: var(--text-muted);
+    letter-spacing: 0.01em;
+  }
+}
+
+// ── Submit button ─────────────────────────────────────────────────────────────
+
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-2 $space-4;
+  background: var(--accent);
+  color: var(--text-inverse);
+  border-radius: $radius-md;
+  font-size: $text-sm;
+  font-weight: 500;
+  font-family: $font-main;
+  transition: background $transition-fast, opacity $transition-fast;
+  letter-spacing: 0.01em;
+
+  &:hover { background: var(--accent-hover); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  svg { width: 14px; height: 14px; }
+}
+
+// ── Timeline container ────────────────────────────────────────────────────────
+
+.timeline-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: $space-2 $space-8 $space-8;
+  width: 100%;
+  max-width: 1280px;
+}
+
+// ── Day group ─────────────────────────────────────────────────────────────────
+
+.day-group {
+  margin-bottom: $space-8;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-3;
+    margin-bottom: $space-4;
+  }
+
+  &__date {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  &__count {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: $text-xs;
+    color: var(--text);
+    white-space: nowrap;
+    min-width: 24px;
+    height: 24px;
+    border-radius: $radius-full;
+    border: 2px solid var(--border);
+    background-color: var(--bg-surface);
+    flex-shrink: 0;
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+    transition: transform $transition-fast;
+    padding-left: 8px;
+    padding-right: 9px;
+  }
+}
+
+// ── Timeline entries ──────────────────────────────────────────────────────────
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding-left: $space-5;
+  position: relative;
+
+  // Vertical line
+  &::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: var(--timeline-line);
+  }
+}
+
+// ── Log entry card ────────────────────────────────────────────────────────────
+
+.log-entry {
+  display: flex;
+  gap: $space-4;
+  align-items: flex-start;
+  position: relative;
+  cursor: pointer;
+
+  &__dot {
+    width: 15px;
+    height: 15px;
+    border-radius: $radius-full;
+    border: 2px solid var(--bg-app);
+    flex-shrink: 0;
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+    transition: transform $transition-fast;
+  }
+
+  &:hover .log-entry__dot {
+    transform: scale(1.2);
+  }
+
+  &__card {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    padding: $space-4 $space-5;
+    transition: border-color $transition-fast, box-shadow $transition-fast, transform $transition-fast;
+
+    &:hover {
+      border-color: var(--text-muted);
+      box-shadow: var(--shadow-sm);
+      transform: translateX(2px);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $space-3;
+    margin-bottom: $space-2;
+  }
+
+  &__message {
+    font-size: $text-sm;
+    line-height: 1.65;
+    font-weight: 400;
+    flex: 1;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    flex-shrink: 0;
+  }
+
+  &__time {
+    font-size: $text-xs;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  &__refs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+    margin-top: $space-3;
+  }
+}
+
+// ── Rating badge ──────────────────────────────────────────────────────────────
+
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: $radius-full;
+  font-size: $text-xs;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+@mixin rating-style($color-var, $bg-var) {
+  color: var(#{$color-var});
+  background: var(#{$bg-var});
+  .log-entry__dot & { background: var(#{$color-var}); }
+}
+
+.rating-1 { @include rating-style(--rating-1, --rating-1-bg); }
+.rating-2 { @include rating-style(--rating-2, --rating-2-bg); }
+.rating-3 { @include rating-style(--rating-3, --rating-3-bg); }
+.rating-4 { @include rating-style(--rating-4, --rating-4-bg); }
+.rating-5 { @include rating-style(--rating-5, --rating-5-bg); }
+
+// Dot colors (standalone usage)
+.dot-rating-1 { background: var(--rating-1); }
+.dot-rating-2 { background: var(--rating-2); }
+.dot-rating-3 { background: var(--rating-3); }
+.dot-rating-4 { background: var(--rating-4); }
+.dot-rating-5 { background: var(--rating-5); }
+
+// Message colors per rating
+.msg-rating-1 { color: var(--text-primary); }
+.msg-rating-2 { color: var(--rating-2); }
+.msg-rating-3 { color: var(--rating-3); }
+.msg-rating-4 { color: var(--rating-4); }
+.msg-rating-5 { color: var(--rating-5); }
+
+// ── Reference chip ────────────────────────────────────────────────────────────
+
+.ref-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  padding: 3px $space-2;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: $radius-sm;
+  font-size: $text-xs;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background $transition-fast, color $transition-fast;
+
+  &:hover {
+    background: var(--border);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  svg { width: 11px; height: 11px; flex-shrink: 0; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-3;
+  padding: $space-16;
+  color: var(--text-muted);
+  text-align: center;
+
+  &__icon {
+    font-size: 2rem;
+    opacity: 0.4;
+  }
+
+  &__title {
+    font-size: $text-base;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  &__desc {
+    font-size: $text-sm;
+  }
+}
+
+// ── Slide-in panel ────────────────────────────────────────────────────────────
+
+.panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 100;
+  animation: fadeIn $transition-normal forwards;
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: $panel-width;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-panel);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight $transition-slow forwards;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-5 $space-6;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: $text-base;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $space-6;
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  &__footer {
+    padding: $space-4 $space-6;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: $space-3;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+}
+
+// ── Form fields ───────────────────────────────────────────────────────────────
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  &__label {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+  }
+
+  &__input,
+  &__textarea,
+  &__select {
+    width: 100%;
+    padding: $space-3 $space-4;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    font-size: $text-sm;
+    font-family: $font-main;
+    color: var(--text-primary);
+    transition: border-color $transition-fast;
+    outline: none;
+
+    &:focus {
+      border-color: var(--border-focus);
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  &__textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.6;
+  }
+}
+
+// ── Rating selector ───────────────────────────────────────────────────────────
+
+.rating-selector {
+  display: flex;
+  gap: $space-2;
+
+  &__btn {
+    flex: 1;
+    padding: $space-2;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    font-size: $text-sm;
+    font-weight: 600;
+    font-family: $font-main;
+    text-align: center;
+    cursor: pointer;
+    transition: all $transition-fast;
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+
+    &.active-1 { color: var(--rating-1); background: var(--rating-1-bg); border-color: var(--rating-1); }
+    &.active-2 { color: var(--rating-2); background: var(--rating-2-bg); border-color: var(--rating-2); }
+    &.active-3 { color: var(--rating-3); background: var(--rating-3-bg); border-color: var(--rating-3); }
+    &.active-4 { color: var(--rating-4); background: var(--rating-4-bg); border-color: var(--rating-4); }
+    &.active-5 { color: var(--rating-5); background: var(--rating-5-bg); border-color: var(--rating-5); }
+
+    &:hover:not(.active-1):not(.active-2):not(.active-3):not(.active-4):not(.active-5) {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+  }
+}
+
+// ── Reference rows ────────────────────────────────────────────────────────────
+
+.ref-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-3;
+}
+
+.ref-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: $space-2;
+  align-items: start;
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: $radius-md;
+  padding: $space-3;
+  position: relative;
+
+  &__remove {
+    position: absolute;
+    top: $space-2;
+    right: $space-2;
+    width: 20px;
+    height: 20px;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: $text-xs;
+    transition: background $transition-fast, color $transition-fast;
+
+    &:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.btn-add-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $text-sm;
+  color: var(--text-secondary);
+  padding: $space-2 0;
+  font-family: $font-main;
+  transition: color $transition-fast;
+
+  &:hover { color: var(--text-primary); }
+  svg { width: 14px; height: 14px; }
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  font-size: $text-sm;
+  font-weight: 500;
+  font-family: $font-main;
+  transition: background $transition-fast, color $transition-fast, opacity $transition-fast;
+  white-space: nowrap;
+
+  &--primary {
+    background: var(--accent);
+    color: var(--text-inverse);
+    &:hover { background: var(--accent-hover); }
+  }
+
+  &--ghost {
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    background: transparent;
+    &:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+  }
+
+  &--danger {
+    color: var(--rating-5);
+    border: 1px solid transparent;
+    background: transparent;
+    &:hover { background: var(--rating-5-bg); border-color: var(--rating-5); }
+  }
+
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// ── Onboarding modal ──────────────────────────────────────────────────────────
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn $transition-normal forwards;
+}
+
+.modal {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: $radius-xl;
+  padding: $space-10;
+  width: 420px;
+  box-shadow: var(--shadow-md);
+  animation: scaleIn $transition-slow forwards;
+
+  &__icon {
+    font-size: 2rem;
+    margin-bottom: $space-5;
+  }
+
+  &__title {
+    font-size: $text-2xl;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: $space-2;
+  }
+
+  &__desc {
+    font-size: $text-sm;
+    color: var(--text-secondary);
+    margin-bottom: $space-6;
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: $space-6;
+  }
+}
+
+// ── Settings page ─────────────────────────────────────────────────────────────
+
+.settings-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  padding: $space-5 $space-8;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+
+  &__title {
+    font-size: $text-lg;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $space-8;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $space-8;
+}
+
+.settings-section {
+  &__title {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: $space-4;
+    padding-bottom: $space-3;
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+}
+
+.data-actions {
+  display: flex;
+  gap: $space-3;
+  flex-wrap: wrap;
+}
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+
+.theme-toggle {
+  display: flex;
+  gap: $space-2;
+
+  &__btn {
+    flex: 1;
+    padding: $space-3 $space-4;
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    font-size: $text-sm;
+    font-family: $font-main;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-surface-2);
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-align: center;
+
+    &.active {
+      background: var(--accent);
+      color: var(--text-inverse);
+      border-color: var(--accent);
+    }
+
+    &:not(.active):hover {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+    }
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+
+.toast-container {
+  position: fixed;
+  bottom: $space-6;
+  right: $space-6;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+}
+
+.toast {
+  padding: $space-3 $space-5;
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  border-radius: $radius-md;
+  font-size: $text-sm;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  animation: slideInRight $transition-normal forwards;
+
+  &--error {
+    background: var(--rating-5);
+    color: #fff;
+  }
+
+  &--success {
+    background: #2E7D5A;
+    color: #fff;
+  }
+}
+
+// ── Animations ────────────────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0);   opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slideUp $transition-normal forwards;
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: $space-2 0;
+}
