@@ -1,0 +1,130 @@
+name: "Log stack build"
+
+on:
+  push:
+    tags:
+      - "v*" # Triggers on version tags (e.g. v1.0.0)
+    branches:
+      - main # Allows testing builds on main branch pushes
+  workflow_dispatch: # Allows manual trigger from Actions tab
+
+env:
+  CARGO_INCREMENTAL: 0 # Disables incremental compilation overhead for faster CI builds
+
+jobs:
+  build-app:
+    name: "Build (${{ matrix.platform }})"
+    runs-on: ${{ matrix.platform }}
+    continue-on-error: true # Ensures completed builds proceed if one OS fails
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false # Keeps other OS matrix builds running if one fails
+      matrix:
+        include:
+          - platform: "macos-latest"
+            target: "aarch64-apple-darwin"
+            args: "--target aarch64-apple-darwin"
+          - platform: "ubuntu-22.04"
+            target: "x86_64-unknown-linux-gnu"
+            args: ""
+          - platform: "windows-latest"
+            target: "x86_64-pc-windows-msvc"
+            args: ""
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: "./src-tauri -> target"
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build Tauri App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Log Stack ${{ github.ref_name }}"
+          args: ${{ matrix.args }}
+          uploadToTauriRelease: false
+
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-builds-${{ matrix.platform }}
+          retention-days: 1 # Deletes temporary artifacts after 1 day to save storage space
+          path: |
+            src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
+            src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
+            src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
+            src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+            src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: warn
+
+  publish-release:
+    name: "Publish GitHub Release"
+    needs: build-app
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tauri-builds-*
+          merge-multiple: true
+          path: ./release-assets
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest-build' }}
+          name: ${{ github.ref_type == 'tag' && format('Log Stack {0}', github.ref_name) || 'Log Stack (Continuous Build)' }}
+          body: "Automated release build for Log Stack."
+          draft: false
+          prerelease: ${{ github.ref_type != 'tag' }}
+          files: ./release-assets/*
