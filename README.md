@@ -140,9 +140,9 @@ npm run tauri build
 ## Database
 
 redb stores data at:
-- **macOS**: `~/Library/Application Support/com.yourname.dailylogger/logger.redb`
-- **Linux**: `~/.local/share/com.yourname.dailylogger/logger.redb`
-- **Windows**: `%APPDATA%\com.yourname.dailylogger\logger.redb`
+- **macOS**: `~/Library/Application Support/com.mags749.logstack/logger.redb`
+- **Linux**: `~/.local/share/com.mags749.logstack/logger.redb`
+- **Windows**: `%APPDATA%\com.mags749.logstack\logger.redb`
 
 Two tables:
 - `logs` — key: `u64` (auto-increment ID), value: JSON string of log entry

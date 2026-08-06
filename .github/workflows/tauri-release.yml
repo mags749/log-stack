@@ -1,0 +1,86 @@
+name: Tauri Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux
+          - os: windows-latest
+            name: windows
+          - os: macos-latest
+            name: macos
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install JS deps (Linux/macOS)
+        if: matrix.name != 'windows'
+        run: npm ci
+
+      - name: Install JS deps (Windows) - avoids optional native binding issues
+        if: matrix.name == 'windows'
+        run: |
+          if exist node_modules rmdir /s /q node_modules
+          if exist package-lock.json del /f /q package-lock.json
+          npm cache clean --force
+          npm i
+
+      - name: Install Linux build deps (WebKitGTK dev libs)
+        if: matrix.name == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            libwebkit2gtk-4.1-dev \
+            curl \
+            wget \
+            patchelf || true
+
+          # fallback for images that still only have the 4.0 package
+          sudo apt-get install -y libwebkit2gtk-4.0-dev || true
+
+      - name: Build (bundle)
+        run: npm run tauri:build
+
+      - name: Upload bundle artifacts (for release job)
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-${{ matrix.name }}
+          path: |
+            src-tauri/target/bundle/**
+
+  upload:
+    needs: build
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*

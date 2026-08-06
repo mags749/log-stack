@@ -19,8 +19,15 @@ export function groupByDate(logs) {
     groups.get(key).logs.push(log);
   }
 
-  // Already sorted desc by timestamp from backend, groups will naturally be newest first
-  return Array.from(groups.values());
+  // Sort groups newest-first by dateKey, then sort entries within each group
+  return Array.from(groups.values())
+    .sort((a, b) => b.dateKey.localeCompare(a.dateKey))
+    .map((group) => ({
+      ...group,
+      logs: [...group.logs].sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      ),
+    }));
 }
 
 export function formatDateLabel(date) {
