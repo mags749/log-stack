@@ -5,8 +5,8 @@ import { IconLink } from "./Icons";
 
 const RATING_LABEL = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
-export default function Timeline() {
-  const groups = createMemo(() => groupByDate(store.logs));
+const Timeline = () => {
+  const groups = createMemo(() => groupByDate(store.logs, store.settings));
 
   return (
     <div class="timeline-container">
@@ -43,9 +43,15 @@ export default function Timeline() {
   );
 }
 
-function LogCard(props) {
+const LogCard = (props) => {
+  const s = () => store.settings || {};
   const log = () => props.log;
   const r = () => log().rating;
+
+  const formatLogTime = (timestamp) => {
+    const settings = s();
+    return formatTime(timestamp, settings.timezone);
+  }
 
   return (
     <div class="log-entry" onClick={() => selectLog(log().id)}>
@@ -63,7 +69,7 @@ function LogCard(props) {
             <span class={`rating-badge rating-${r()}`}>
               {RATING_LABEL[r()]}
             </span>
-            <span class="log-entry__time">{formatTime(log().timestamp)}</span>
+            <span class="log-entry__time">{formatLogTime(log().timestamp)}</span>
           </div>
         </div>
 
@@ -94,3 +100,6 @@ function LogCard(props) {
     </div>
   );
 }
+
+
+export default Timeline;

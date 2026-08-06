@@ -5,14 +5,14 @@ import Timeline from "../components/Timeline";
 import EditPanel from "../components/EditPanel";
 import { IconGear, IconArrow, IconLogs } from "../components/Icons";
 
-export default function Home() {
+const Home = () => {
   const [message, setMessage] = createSignal("");
   const [submitting, setSubmitting] = createSignal(false);
 
   const firstName = () => getFirstName(store.settings?.user_name || "");
   const greeting = () => getGreeting();
 
-  async function handleSubmit() {
+  const handleSubmit = async () => {
     const msg = message().trim();
     if (!msg || submitting()) return;
     setSubmitting(true);
@@ -21,14 +21,14 @@ export default function Home() {
     setSubmitting(false);
   }
 
-  function handleKeyDown(e) {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   }
 
-  function handleInput(e) {
+  const handleInput = (e) => {
     setMessage(e.target.value);
     e.target.style.height = "auto";
     e.target.style.height = Math.min(e.target.scrollHeight, 160) + "px";
@@ -101,3 +101,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home;

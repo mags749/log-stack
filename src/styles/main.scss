@@ -454,10 +454,17 @@
 
 // ── Form fields ───────────────────────────────────────────────────────────────
 
+.field-set {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: $space-2;
+  flex: 1;
 
   &__label {
     font-size: $text-xs;
@@ -1260,6 +1267,123 @@
       &::after {
         border-top-color: var(--text-muted) !important;
         border-bottom-color: var(--text-muted) !important;
+      }
+    }
+  }
+}
+
+// Import or assume access to your token variables here
+
+details.dropdown {
+  position: relative;
+  display: inline-block;
+  font-family: $font-main;
+  width: 100%;
+  max-width: 320px;
+
+  // ── Summary (Select trigger) ────────────────────────────────────────────────
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $space-2 $space-4;
+    font-size: $text-base;
+    font-weight: 500;
+    color: var(--text-primary);
+    background-color: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    cursor: pointer;
+    user-select: none;
+    list-style: none; // Hide native marker
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &::-webkit-details-marker {
+      display: none; // Safari fallback
+    }
+
+    // Custom dropdown chevron arrow
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 0.5rem;
+      height: 0.5rem;
+      margin-left: $space-3;
+      border-right: 2px solid var(--text-secondary);
+      border-bottom: 2px solid var(--text-secondary);
+      transform: rotate(45deg) translateY(-2px);
+      transition: transform $transition-fast;
+    }
+
+    &:hover {
+      border-color: var(--text-secondary);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--border-focus);
+    }
+  }
+
+  // ── Open state trigger tweak ────────────────────────────────────────────────
+  &[open] {
+    summary {
+      border-color: var(--border-focus);
+
+      &::after {
+        transform: rotate(-135deg) translateY(-2px);
+      }
+    }
+  }
+
+  // ── Menu List ───────────────────────────────────────────────────────────────
+  ul[role="listbox"] {
+    position: absolute;
+    top: calc(100% + #{$space-1});
+    left: 0;
+    right: 0;
+    z-index: 50;
+    margin: 0;
+    padding: $space-1;
+    list-style: none;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: $radius-md;
+    box-shadow: var(--shadow-md);
+    max-height: 240px;
+    overflow-y: auto;
+
+    li {
+      margin: 0;
+      padding: 0;
+
+      a {
+        display: block;
+        padding: $space-2 $space-3;
+        font-size: $text-sm;
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: $radius-sm;
+        transition: background-color $transition-fast, color $transition-fast;
+
+        &:hover {
+          background-color: var(--bg-surface-2);
+          color: var(--accent);
+        }
+
+        &[aria-selected="true"] {
+          font-weight: 600;
+          background-color: var(--bg-surface-2);
+          color: var(--accent);
+          position: relative;
+
+          &::after {
+            content: "✓";
+            float: right;
+            color: var(--accent);
+          }
+        }
       }
     }
   }

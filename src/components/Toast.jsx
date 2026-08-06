@@ -1,8 +1,7 @@
 import { For } from "solid-js";
 import { toasts } from "../store";
 
-export default function Toast() {
-  return (
+const Toast = () => (
     <div class="toast-container">
       <For each={toasts()}>
         {(t) => (
@@ -11,4 +10,5 @@ export default function Toast() {
       </For>
     </div>
   );
-}
+
+export default Toast;

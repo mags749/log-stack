@@ -1,6 +1,6 @@
 import { createSignal, createMemo, onMount, onCleanup, For, Show } from "solid-js";
 import { store, navigateTo, showToast } from "../store";
-import { formatTime } from "../utils/date";
+import { formatDate, formatTime } from "../utils/date";
 import { IconBack, IconMarkdown, IconSort, IconLink } from "../components/Icons";
 import flatpickr from "flatpickr";
 
@@ -13,7 +13,8 @@ const RATING_META = {
   1: { label: "Routine", emoji: "○" },
 };
 
-export default function Logs() {
+const Logs = () => {
+  const s = () => store.settings || {};
   const [dateFrom, setDateFrom] = createSignal(null);   // Date object or null
   const [dateTo, setDateTo] = createSignal(null);       // Date object or null
   const [sortDir, setSortDir] = createSignal("desc");   // "asc" | "desc"
@@ -49,7 +50,7 @@ export default function Logs() {
 
   onCleanup(() => fpInstance?.destroy());
 
-  function clearDateRange() {
+  const clearDateRange = () => {
     fpInstance?.clear();
     setDateFrom(null);
     setDateTo(null);
@@ -79,12 +80,18 @@ export default function Logs() {
 
   const totalFiltered = createMemo(() => filteredLogs().length);
 
-  function formatLogDate(timestamp) {
+  const formatLogDate = (timestamp) => {
+    const settings = s();
     const d = new Date(timestamp);
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return formatDate(d, settings.date_format, settings.timezone);
   }
 
-  function exportMarkdown() {
+  const formatLogTime = (timestamp) => {
+    const settings = s();
+    return formatTime(timestamp, settings.timezone);
+  }
+
+  const exportMarkdown = () => {
     const groups = groupedByRating();
     if (groups.length === 0) {
       showToast("No logs to export", "error");
@@ -111,7 +118,7 @@ export default function Logs() {
       lines.push(``);
 
       for (const log of group.logs) {
-        lines.push(`### ${formatLogDate(log.timestamp)} · ${formatTime(log.timestamp)}`);
+        lines.push(`### ${formatLogDate(log.timestamp)} · ${formatLogTime(log.timestamp)}`);
         lines.push(``);
         lines.push(log.message);
         lines.push(``);
@@ -216,13 +223,20 @@ export default function Logs() {
   );
 }
 
-function RatingSection(props) {
+const RatingSection = (props) => {
+  const s = () => store.settings || {};
   const { rating, logs } = props.group;
   const meta = RATING_META[rating];
 
-  function formatLogDate(timestamp) {
+  const formatLogDate = (timestamp) => {
+    const settings = s();
     const d = new Date(timestamp);
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return formatDate(d, settings.date_format, settings.timezone);
+  }
+
+  const formatLogTime = (timestamp) => {
+    const settings = s();
+    return formatTime(timestamp, settings.timezone);
   }
 
   return (
@@ -245,7 +259,7 @@ function RatingSection(props) {
               <div class="logs-entry__content">
                 <div class="logs-entry__date-time">
                   <span class="logs-entry__date">{formatLogDate(log.timestamp)}</span>
-                  <span class="logs-entry__time">{formatTime(log.timestamp)}</span>
+                  <span class="logs-entry__time">{formatLogTime(log.timestamp)}</span>
                 </div>
                 <p class={`logs-entry__message msg-rating-${rating}`}>{log.message}</p>
                 <Show when={log.references?.length > 0}>
@@ -271,3 +285,5 @@ function RatingSection(props) {
     </section>
   );
 }
+
+export default Logs;

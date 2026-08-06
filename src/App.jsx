@@ -6,7 +6,7 @@ import Logs from "./pages/Logs";
 import Onboarding from "./components/Onboarding";
 import Toast from "./components/Toast";
 
-export default function App() {
+const App = () => {
   const [showOnboarding, setShowOnboarding] = createSignal(false);
 
   onMount(async () => {
@@ -41,8 +41,7 @@ export default function App() {
   );
 }
 
-function LoadingScreen() {
-  return (
+const LoadingScreen = () => (
     <div style={{
       height: "100vh", display: "flex", "align-items": "center",
       "justify-content": "center", color: "var(--text-muted)",
@@ -51,4 +50,5 @@ function LoadingScreen() {
       Loading…
     </div>
   );
-}
+
+export default App;

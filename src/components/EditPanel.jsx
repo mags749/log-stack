@@ -7,9 +7,8 @@ import flatpickr from "flatpickr";
 // Updated rating scale: 1=Routine, 2=Minor, 3=Solid, 4=Great, 5=Best
 const RATING_LABELS = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
-export default function EditPanel() {
+const EditPanel = () => {
   const log = () => store.logs.find((l) => l.id === store.selectedLogId);
-
   const [message, setMessage] = createSignal("");
   const [rating, setRating] = createSignal(1);
   const [timestamp, setTimestamp] = createSignal("");
@@ -58,19 +57,19 @@ export default function EditPanel() {
 
   onCleanup(() => fpInstance?.destroy());
 
-  function addRef() {
+  const addRef = () => {
     setRefs((r) => [...r, { type: "", label: "", url: "" }]);
   }
 
-  function removeRef(i) {
+  const removeRef = (i) => {
     setRefs((r) => r.filter((_, idx) => idx !== i));
   }
 
-  function updateRef(i, field, val) {
+  const updateRef = (i, field, val) => {
     setRefs((r) => r.map((ref, idx) => (idx === i ? { ...ref, [field]: val } : ref)));
   }
 
-  async function handleSave() {
+  const handleSave = async () => {
     setSaving(true);
     await updateLog(log().id, {
       message: message(),
@@ -82,7 +81,7 @@ export default function EditPanel() {
     closePanelAction();
   }
 
-  async function handleDelete() {
+  const handleDelete = async () => {
     if (!confirm("Delete this log entry?")) return;
     setDeleting(true);
     await removeLog(log().id);
@@ -210,3 +209,5 @@ export default function EditPanel() {
     </Show>
   );
 }
+
+export default EditPanel;

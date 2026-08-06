@@ -14,7 +14,7 @@ const [store, setStore] = createStore({
 const [toasts, setToasts] = createSignal([]);
 let toastId = 0;
 
-export function showToast(message, type = "info", duration = 3000) {
+export const showToast = (message, type = "info", duration = 3000) => {
   const id = ++toastId;
   setToasts((t) => [...t, { id, message, type }]);
   setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), duration);
@@ -22,7 +22,7 @@ export function showToast(message, type = "info", duration = 3000) {
 
 export { toasts };
 
-export async function loadLogs() {
+export const loadLogs = async () => {
   try {
     const response = await api.listLogs();
     setStore({ logs: response.logs, totalCount: response.total_count });
@@ -31,7 +31,7 @@ export async function loadLogs() {
   }
 }
 
-export async function addLog(message) {
+export const addLog = async (message) => {
   if (!message.trim()) return;
   try {
     const entry = await api.createLog(message.trim());
@@ -44,7 +44,7 @@ export async function addLog(message) {
   }
 }
 
-export async function updateLog(id, fields) {
+export const updateLog = async (id, fields) => {
   try {
     const updated = await api.updateLog(id, fields);
     // Build a new sorted array and assign it directly so Solid's
@@ -60,7 +60,7 @@ export async function updateLog(id, fields) {
   }
 }
 
-export async function removeLog(id) {
+export const removeLog =  async (id) => {
   try {
     await api.deleteLog(id);
     setStore("logs", (logs) => logs.filter((l) => l.id !== id));
@@ -72,7 +72,7 @@ export async function removeLog(id) {
   }
 }
 
-export async function loadSettings() {
+export const loadSettings = async () => {
   try {
     const settings = await api.getSettings();
     setStore({ settings });
@@ -83,7 +83,7 @@ export async function loadSettings() {
   }
 }
 
-export async function saveSettings(settings) {
+export const saveSettings = async (settings) => {
   try {
     const saved = await api.saveSettings(settings);
     setStore({ settings: saved });
@@ -95,7 +95,7 @@ export async function saveSettings(settings) {
   }
 }
 
-export async function doFactoryReset() {
+export const doFactoryReset = async () => {
   try {
     await api.factoryReset();
     setStore({ logs: [], totalCount: 0, settings: null, page: "home", selectedLogId: null });
@@ -108,24 +108,24 @@ export async function doFactoryReset() {
   }
 }
 
-export function applyTheme(theme) {
+export const applyTheme = (theme) => {
   document.documentElement.setAttribute("data-theme", theme);
 }
 
-export function selectLog(id) {
+export const selectLog = (id) => {
   setStore("selectedLogId", id);
 }
 
-export function closePanelAction() {
+export const closePanelAction = () => {
   setStore("selectedLogId", null);
 }
 
-export function navigateTo(page) {
+export const navigateTo = (page) => {
   setStore("selectedLogId", null);
   setStore("page", page);
 }
 
-export function setLoading(v) {
+export const setLoading = (v) => {
   setStore("loading", v);
 }
 

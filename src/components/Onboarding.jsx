@@ -1,11 +1,11 @@
 import { createSignal } from "solid-js";
 import { saveSettings, store } from "../store";
 
-export default function Onboarding(props) {
+const Onboarding = (props) => {
   const [name, setName] = createSignal("");
   const [saving, setSaving] = createSignal(false);
 
-  async function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name().trim()) return;
     setSaving(true);
@@ -54,3 +54,5 @@ export default function Onboarding(props) {
     </div>
   );
 }
+
+export default Onboarding

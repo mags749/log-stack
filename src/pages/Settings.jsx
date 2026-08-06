@@ -1,21 +1,13 @@
 import { createSignal, createEffect, For } from "solid-js";
-import { store, saveSettings, navigateTo, showToast, doFactoryReset, loadSettings } from "../store";
+import { store, saveSettings, navigateTo, showToast, doFactoryReset, loadSettings, loadLogs } from "../store";
 import { api } from "../utils/api";
+import { TIMEZONES, DATE_FORMATS } from '../utils/date';
 import { IconBack, IconUpload, IconDownload, IconWarning } from "../components/Icons";
+import { PicoDropdown } from "../components/PicoDropdown";
 
 const RATING_LABELS = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
-const DATE_FORMATS = [
-  "MMM DD, YYYY", "DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD", "DD MMM YYYY",
-];
-
-const TIMEZONES = [
-  "UTC", "America/New_York", "America/Chicago", "America/Denver",
-  "America/Los_Angeles", "Europe/London", "Europe/Paris", "Europe/Berlin",
-  "Asia/Tokyo", "Asia/Shanghai", "Asia/Kolkata", "Australia/Sydney",
-];
-
-export default function Settings() {
+const Settings = () => {
   const s = () => store.settings || {};
 
   const [name, setName] = createSignal("");
@@ -38,7 +30,7 @@ export default function Settings() {
     }
   });
 
-  async function handleSave() {
+  const handleSave = async () => {
     setSaving(true);
     await saveSettings({
       user_name: name(),
@@ -50,7 +42,7 @@ export default function Settings() {
     setSaving(false);
   }
 
-  async function handleExport() {
+  const handleExport = async () => {
     try {
       const json = await api.exportLogs();
       const blob = new Blob([json], { type: "application/json" });
@@ -66,7 +58,7 @@ export default function Settings() {
     }
   }
 
-  async function handleImport() {
+  const handleImport = async () => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
@@ -77,7 +69,6 @@ export default function Settings() {
         const text = await file.text();
         const count = await api.importLogs(text);
         showToast(`Imported ${count} logs`, "success");
-        const { loadLogs } = await import("../store");
         await loadLogs();
       } catch (err) {
         showToast(`Import failed: ${err}`, "error");
@@ -86,7 +77,7 @@ export default function Settings() {
     input.click();
   }
 
-  async function handleFactoryReset() {
+  const handleFactoryReset = async () => {
     setResetting(true);
     const ok = await doFactoryReset();
     setResetting(false);
@@ -162,19 +153,24 @@ export default function Settings() {
                 Default: {RATING_LABELS[defaultRating()]}
               </span>
             </div>
+            <div class="field-set">
+              <div class="field">
+                <label class="field__label">Date format</label>
+                <PicoDropdown
+                  value={dateFormat()}
+                  onChange={setDateFormat}
+                  options={DATE_FORMATS}
+                  placeholder="Date format" />
+              </div>
 
-            <div class="field">
-              <label class="field__label">Date format</label>
-              <select class="field__select" value={dateFormat()} onChange={(e) => setDateFormat(e.target.value)}>
-                <For each={DATE_FORMATS}>{(f) => <option value={f}>{f}</option>}</For>
-              </select>
-            </div>
-
-            <div class="field">
-              <label class="field__label">Timezone</label>
-              <select class="field__select" value={timezone()} onChange={(e) => setTimezone(e.target.value)}>
-                <For each={TIMEZONES}>{(tz) => <option value={tz}>{tz}</option>}</For>
-              </select>
+              <div class="field">
+                <label class="field__label">Timezone</label>
+                  <PicoDropdown
+                    value={timezone()}
+                    onChange={setTimezone}
+                    options={TIMEZONES}
+                    placeholder="Timezone for the date" />
+              </div>
             </div>
           </div>
         </section>
@@ -239,3 +235,5 @@ export default function Settings() {
     </div>
   );
 }
+
+export default Settings;
