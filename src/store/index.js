@@ -2,35 +2,25 @@ import { createStore } from "solid-js/store";
 import { createSignal } from "solid-js";
 import { api } from "../utils/api";
 
-// ── App store ─────────────────────────────────────────────────────────────────
-
 const [store, setStore] = createStore({
   logs: [],
   totalCount: 0,
-  settings: null,         // null = not loaded yet
+  settings: null,
   loading: true,
-  page: "home",           // "home" | "settings"
-  selectedLogId: null,    // id of the log open in the panel
+  page: "home",        // "home" | "settings" | "logs"
+  selectedLogId: null,
 });
 
-// Toast signal
 const [toasts, setToasts] = createSignal([]);
-
-// ── Toast helpers ─────────────────────────────────────────────────────────────
-
 let toastId = 0;
 
 export function showToast(message, type = "info", duration = 3000) {
   const id = ++toastId;
   setToasts((t) => [...t, { id, message, type }]);
-  setTimeout(() => {
-    setToasts((t) => t.filter((x) => x.id !== id));
-  }, duration);
+  setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), duration);
 }
 
 export { toasts };
-
-// ── Store actions ─────────────────────────────────────────────────────────────
 
 export async function loadLogs() {
   try {
@@ -57,7 +47,12 @@ export async function addLog(message) {
 export async function updateLog(id, fields) {
   try {
     const updated = await api.updateLog(id, fields);
-    setStore("logs", (log) => log.id === id, (log) => ({ ...log, ...updated }));
+    // Build a new sorted array and assign it directly so Solid's
+    // reactivity detects the reference change and re-runs all memos
+    const next = store.logs
+      .map((l) => (l.id === id ? { ...l, ...updated } : l))
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    setStore("logs", next);
     showToast("Log updated", "success");
     return updated;
   } catch (e) {
@@ -81,7 +76,6 @@ export async function loadSettings() {
   try {
     const settings = await api.getSettings();
     setStore({ settings });
-    // Apply theme
     if (settings.theme) applyTheme(settings.theme);
     return settings;
   } catch (e) {
@@ -101,6 +95,19 @@ export async function saveSettings(settings) {
   }
 }
 
+export async function doFactoryReset() {
+  try {
+    await api.factoryReset();
+    setStore({ logs: [], totalCount: 0, settings: null, page: "home", selectedLogId: null });
+    applyTheme("light");
+    showToast("App reset to factory defaults", "success");
+    return true;
+  } catch (e) {
+    showToast(`Factory reset failed: ${e}`, "error");
+    return false;
+  }
+}
+
 export function applyTheme(theme) {
   document.documentElement.setAttribute("data-theme", theme);
 }
@@ -114,6 +121,7 @@ export function closePanelAction() {
 }
 
 export function navigateTo(page) {
+  setStore("selectedLogId", null);
   setStore("page", page);
 }
 

@@ -1,29 +1,18 @@
 import { createSignal, createEffect, For } from "solid-js";
-import { store, saveSettings, navigateTo, showToast } from "../store";
+import { store, saveSettings, navigateTo, showToast, doFactoryReset, loadSettings } from "../store";
 import { api } from "../utils/api";
-import { IconBack, IconUpload, IconDownload } from "../components/Icons";
+import { IconBack, IconUpload, IconDownload, IconWarning } from "../components/Icons";
+
+const RATING_LABELS = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
 const DATE_FORMATS = [
-  "MMM DD, YYYY",
-  "DD/MM/YYYY",
-  "MM/DD/YYYY",
-  "YYYY-MM-DD",
-  "DD MMM YYYY",
+  "MMM DD, YYYY", "DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD", "DD MMM YYYY",
 ];
 
 const TIMEZONES = [
-  "UTC",
-  "America/New_York",
-  "America/Chicago",
-  "America/Denver",
-  "America/Los_Angeles",
-  "Europe/London",
-  "Europe/Paris",
-  "Europe/Berlin",
-  "Asia/Tokyo",
-  "Asia/Shanghai",
-  "Asia/Kolkata",
-  "Australia/Sydney",
+  "UTC", "America/New_York", "America/Chicago", "America/Denver",
+  "America/Los_Angeles", "Europe/London", "Europe/Paris", "Europe/Berlin",
+  "Asia/Tokyo", "Asia/Shanghai", "Asia/Kolkata", "Australia/Sydney",
 ];
 
 export default function Settings() {
@@ -35,6 +24,8 @@ export default function Settings() {
   const [timezone, setTimezone] = createSignal("UTC");
   const [theme, setTheme] = createSignal("light");
   const [saving, setSaving] = createSignal(false);
+  const [confirmReset, setConfirmReset] = createSignal(false);
+  const [resetting, setResetting] = createSignal(false);
 
   createEffect(() => {
     const settings = s();
@@ -86,7 +77,6 @@ export default function Settings() {
         const text = await file.text();
         const count = await api.importLogs(text);
         showToast(`Imported ${count} logs`, "success");
-        // Reload logs
         const { loadLogs } = await import("../store");
         await loadLogs();
       } catch (err) {
@@ -96,10 +86,20 @@ export default function Settings() {
     input.click();
   }
 
+  async function handleFactoryReset() {
+    setResetting(true);
+    const ok = await doFactoryReset();
+    setResetting(false);
+    setConfirmReset(false);
+    if (ok) {
+      // Reload settings (now blank) to reset local signals
+      await loadSettings();
+      navigateTo("home");
+    }
+  }
+
   return (
     <div class="settings-page">
-
-      {/* Header */}
       <div class="settings-header">
         <button class="icon-btn" onClick={() => navigateTo("home")} aria-label="Back">
           <IconBack />
@@ -107,7 +107,6 @@ export default function Settings() {
         <h1 class="settings-header__title">Settings</h1>
       </div>
 
-      {/* Body */}
       <div class="settings-body">
 
         {/* Profile */}
@@ -117,11 +116,8 @@ export default function Settings() {
             <div class="field">
               <label class="field__label">Your name</label>
               <input
-                class="field__input"
-                type="text"
-                value={name()}
-                onInput={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                class="field__input" type="text" value={name()}
+                onInput={(e) => setName(e.target.value)} placeholder="Your name"
               />
             </div>
           </div>
@@ -134,20 +130,10 @@ export default function Settings() {
             <div class="field">
               <label class="field__label">Theme</label>
               <div class="theme-toggle">
-                <button
-                  class={`theme-toggle__btn${theme() === "light" ? " active" : ""}`}
-                  onClick={() => setTheme("light")}
-                  type="button"
-                >
-                  ☀ Light
-                </button>
-                <button
-                  class={`theme-toggle__btn${theme() === "dark" ? " active" : ""}`}
-                  onClick={() => setTheme("dark")}
-                  type="button"
-                >
-                  ☾ Dark
-                </button>
+                <button class={`theme-toggle__btn${theme() === "light" ? " active" : ""}`}
+                  onClick={() => setTheme("light")} type="button">☀ Light</button>
+                <button class={`theme-toggle__btn${theme() === "dark" ? " active" : ""}`}
+                  onClick={() => setTheme("dark")} type="button">☾ Dark</button>
               </div>
             </div>
           </div>
@@ -157,7 +143,6 @@ export default function Settings() {
         <section class="settings-section">
           <h2 class="settings-section__title">Logs</h2>
           <div class="settings-section__fields">
-
             <div class="field">
               <label class="field__label">Default rating</label>
               <div class="rating-selector">
@@ -165,42 +150,32 @@ export default function Settings() {
                   {(r) => (
                     <button
                       class={`rating-selector__btn${defaultRating() === r ? ` active-${r}` : ""}`}
-                      onClick={() => setDefaultRating(r)}
-                      type="button"
+                      onClick={() => setDefaultRating(r)} type="button"
+                      title={RATING_LABELS[r]}
                     >
                       {r}
                     </button>
                   )}
                 </For>
               </div>
+              <span style={{ "font-size": "0.75rem", color: "var(--text-muted)", "margin-top": "4px" }}>
+                Default: {RATING_LABELS[defaultRating()]}
+              </span>
             </div>
 
             <div class="field">
               <label class="field__label">Date format</label>
-              <select
-                class="field__select"
-                value={dateFormat()}
-                onChange={(e) => setDateFormat(e.target.value)}
-              >
-                <For each={DATE_FORMATS}>
-                  {(f) => <option value={f}>{f}</option>}
-                </For>
+              <select class="field__select" value={dateFormat()} onChange={(e) => setDateFormat(e.target.value)}>
+                <For each={DATE_FORMATS}>{(f) => <option value={f}>{f}</option>}</For>
               </select>
             </div>
 
             <div class="field">
               <label class="field__label">Timezone</label>
-              <select
-                class="field__select"
-                value={timezone()}
-                onChange={(e) => setTimezone(e.target.value)}
-              >
-                <For each={TIMEZONES}>
-                  {(tz) => <option value={tz}>{tz}</option>}
-                </For>
+              <select class="field__select" value={timezone()} onChange={(e) => setTimezone(e.target.value)}>
+                <For each={TIMEZONES}>{(tz) => <option value={tz}>{tz}</option>}</For>
               </select>
             </div>
-
           </div>
         </section>
 
@@ -217,14 +192,45 @@ export default function Settings() {
           </div>
         </section>
 
+        {/* Danger zone */}
+        <section class="settings-section settings-section--danger">
+          <h2 class="settings-section__title settings-section__title--danger">Danger zone</h2>
+          <div class="settings-section__fields">
+            <p class="settings-danger__desc">
+              Factory reset will permanently delete all logs and settings. This cannot be undone.
+            </p>
+
+            {confirmReset() ? (
+              <div class="reset-confirm">
+                <div class="reset-confirm__warning">
+                  <IconWarning />
+                  <span>Are you sure? All logs and settings will be permanently deleted.</span>
+                </div>
+                <div class="reset-confirm__actions">
+                  <button class="btn btn--ghost" onClick={() => setConfirmReset(false)} type="button">
+                    Cancel
+                  </button>
+                  <button
+                    class="btn btn--danger-solid"
+                    onClick={handleFactoryReset}
+                    disabled={resetting()}
+                    type="button"
+                  >
+                    {resetting() ? "Resetting…" : "Yes, delete everything"}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button class="btn btn--danger" onClick={() => setConfirmReset(true)} type="button">
+                Factory reset
+              </button>
+            )}
+          </div>
+        </section>
+
         {/* Save */}
         <div>
-          <button
-            class="btn btn--primary"
-            onClick={handleSave}
-            disabled={saving()}
-            type="button"
-          >
+          <button class="btn btn--primary" onClick={handleSave} disabled={saving()} type="button">
             {saving() ? "Saving…" : "Save settings"}
           </button>
         </div>

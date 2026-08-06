@@ -1,9 +1,11 @@
-import { createSignal, createEffect, For, Show } from "solid-js";
+import { createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
 import { store, updateLog, removeLog, closePanelAction } from "../store";
 import { formatTimestamp, toISOFromLocal } from "../utils/date";
 import { IconClose, IconPlus, IconTrash } from "./Icons";
+import flatpickr from "flatpickr";
 
-const RATING_LABELS = { 1: "Low", 2: "Notable", 3: "Attention", 4: "Warning", 5: "Critical" };
+// Updated rating scale: 1=Routine, 2=Minor, 3=Solid, 4=Great, 5=Best
+const RATING_LABELS = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
 export default function EditPanel() {
   const log = () => store.logs.find((l) => l.id === store.selectedLogId);
@@ -15,7 +17,9 @@ export default function EditPanel() {
   const [saving, setSaving] = createSignal(false);
   const [deleting, setDeleting] = createSignal(false);
 
-  // Sync state when log changes
+  let dateInputRef;
+  let fpInstance;
+
   createEffect(() => {
     const l = log();
     if (l) {
@@ -25,6 +29,34 @@ export default function EditPanel() {
       setRefs(l.references ? [...l.references] : []);
     }
   });
+
+  onMount(() => {
+    fpInstance = flatpickr(dateInputRef, {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      time_24hr: true,
+      defaultDate: timestamp() ? new Date(timestamp()) : new Date(),
+      maxDate: 'today',
+      onChange: ([date]) => {
+        if (date) {
+          const pad = (n) => String(n).padStart(2, "0");
+          setTimestamp(
+            `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+          );
+        }
+      },
+    });
+  });
+
+  // Sync flatpickr when log changes
+  createEffect(() => {
+    const ts = timestamp();
+    if (fpInstance && ts) {
+      fpInstance.setDate(new Date(ts), false);
+    }
+  });
+
+  onCleanup(() => fpInstance?.destroy());
 
   function addRef() {
     setRefs((r) => [...r, { type: "", label: "", url: "" }]);
@@ -60,9 +92,8 @@ export default function EditPanel() {
   return (
     <Show when={log()}>
       <div class="panel-overlay" onClick={closePanelAction} />
-      <div class="panel" role="dialog" aria-label="Edit log">
+      <section class="panel" role="dialog" aria-label="Edit log">
 
-        {/* Header */}
         <div class="panel__header">
           <span class="panel__title">Edit log</span>
           <button class="icon-btn" onClick={closePanelAction} aria-label="Close">
@@ -70,10 +101,8 @@ export default function EditPanel() {
           </button>
         </div>
 
-        {/* Body */}
         <div class="panel__body">
 
-          {/* Message */}
           <div class="field">
             <label class="field__label">Message</label>
             <textarea
@@ -84,7 +113,6 @@ export default function EditPanel() {
             />
           </div>
 
-          {/* Rating */}
           <div class="field">
             <label class="field__label">Rating</label>
             <div class="rating-selector">
@@ -106,18 +134,17 @@ export default function EditPanel() {
             </span>
           </div>
 
-          {/* Timestamp */}
           <div class="field">
             <label class="field__label">Timestamp</label>
             <input
-              class="field__input"
-              type="datetime-local"
-              value={timestamp()}
-              onInput={(e) => setTimestamp(e.target.value)}
+              ref={dateInputRef}
+              class="field__input flatpickr-input"
+              type="text"
+              placeholder="Pick date & time…"
+              readOnly
             />
           </div>
 
-          {/* References */}
           <div class="field">
             <label class="field__label">References</label>
             <div class="ref-list">
@@ -149,11 +176,7 @@ export default function EditPanel() {
                         onInput={(e) => updateRef(i(), "url", e.target.value)}
                       />
                     </div>
-                    <button
-                      class="ref-row__remove"
-                      onClick={() => removeRef(i())}
-                      title="Remove"
-                    >✕</button>
+                    <button class="ref-row__remove" onClick={() => removeRef(i())} title="Remove">✕</button>
                   </div>
                 )}
               </For>
@@ -165,22 +188,13 @@ export default function EditPanel() {
 
         </div>
 
-        {/* Footer */}
         <div class="panel__footer">
-          <button
-            class="btn btn--danger"
-            onClick={handleDelete}
-            disabled={deleting()}
-            type="button"
-          >
+          <button class="btn btn--danger" onClick={handleDelete} disabled={deleting()} type="button">
             <IconTrash />
             {deleting() ? "Deleting…" : "Delete"}
           </button>
-
           <div style={{ display: "flex", gap: "8px" }}>
-            <button class="btn btn--ghost" onClick={closePanelAction} type="button">
-              Cancel
-            </button>
+            <button class="btn btn--ghost" onClick={closePanelAction} type="button">Cancel</button>
             <button
               class="btn btn--primary"
               onClick={handleSave}
@@ -192,7 +206,7 @@ export default function EditPanel() {
           </div>
         </div>
 
-      </div>
+      </section>
     </Show>
   );
 }

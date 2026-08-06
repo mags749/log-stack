@@ -156,6 +156,7 @@
   padding: $space-2 $space-8 $space-8;
   width: 100%;
   max-width: 1280px;
+  max-height: calc(100vh - 276px);
 }
 
 // ── Day group ─────────────────────────────────────────────────────────────────
@@ -697,7 +698,7 @@
   flex: 1;
   overflow-y: auto;
   padding: $space-8;
-  max-width: 560px;
+  max-width: 780px;
   width: 100%;
   margin: 0 auto;
   display: flex;
@@ -840,4 +841,426 @@
   height: 1px;
   background: var(--border);
   margin: $space-2 0;
+}
+
+// ── Logs page ─────────────────────────────────────────────────────────────────
+
+.logs-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  align-items: center;
+}
+
+.logs-header {
+  display: flex;
+  align-items: center;
+  gap: $space-4;
+  padding: $space-5 $space-8;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  width: 100%;
+
+  &__title-area {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: $space-3;
+  }
+
+  &__title {
+    font-size: $text-lg;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  &__count {
+    font-size: $text-sm;
+    color: var(--text-muted);
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-2;
+  }
+}
+
+.logs-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  padding: $space-3 $space-8;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 1280px;
+
+  &__date {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  &__clear {
+    position: absolute;
+    right: $space-3;
+    color: var(--text-muted);
+    font-size: $text-xs;
+    width: 18px;
+    height: 18px;
+    border-radius: $radius-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background $transition-fast, color $transition-fast;
+
+    &:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+  }
+
+  &__label {
+    font-size: $text-xs;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+}
+
+.logs-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: $space-6 $space-8;
+  display: flex;
+  flex-direction: column;
+  gap: $space-8;
+  width: 100%;
+  max-width: 1280px;
+}
+
+// ── Rating section ────────────────────────────────────────────────────────────
+
+.rating-section {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    margin-bottom: $space-4;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-1 $space-3;
+    border-radius: $radius-full;
+    font-size: $text-xs;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+
+  &__divider {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  &__count {
+    font-size: $text-xs;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  &__timeline {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    padding-left: $space-5;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 8px;
+      bottom: 8px;
+      width: 1px;
+      background: var(--timeline-line);
+    }
+  }
+}
+
+// ── Log entry in logs page ────────────────────────────────────────────────────
+
+.logs-entry {
+  display: flex;
+  gap: $space-4;
+  align-items: flex-start;
+  position: relative;
+
+  &__dot {
+    width: 15px;
+    height: 15px;
+    border-radius: $radius-full;
+    border: 2px solid var(--bg-app);
+    flex-shrink: 0;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__content {
+    flex: 1;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    padding: $space-3 $space-4;
+  }
+
+  &__date-time {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    margin-bottom: $space-2;
+  }
+
+  &__date {
+    font-size: $text-xs;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  &__time {
+    font-size: $text-xs;
+    color: var(--text-muted);
+  }
+
+  &__message {
+    font-size: $text-sm;
+    line-height: 1.65;
+  }
+}
+
+// ── Factory reset styles ──────────────────────────────────────────────────────
+
+.settings-section--danger {
+  border: 1px solid rgba(201, 64, 64, 0.2);
+  border-radius: $radius-lg;
+  padding: $space-5;
+  background: var(--rating-1-bg);
+
+  .settings-section__title--danger {
+    color: var(--rating-1);
+  }
+}
+
+.settings-danger__desc {
+  font-size: $text-sm;
+  color: var(--text-secondary);
+  margin-bottom: $space-4;
+  line-height: 1.6;
+}
+
+.reset-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+
+  &__warning {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-3;
+    padding: $space-3 $space-4;
+    background: var(--rating-1-bg);
+    border: 1px solid var(--rating-1);
+    border-radius: $radius-md;
+    font-size: $text-sm;
+    color: var(--rating-1);
+
+    svg { flex-shrink: 0; margin-top: 2px; }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-3;
+  }
+}
+
+.btn--danger-solid {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  font-size: $text-sm;
+  font-weight: 500;
+  font-family: $font-main;
+  background: var(--rating-1);
+  color: #fff;
+  transition: opacity $transition-fast;
+  white-space: nowrap;
+
+  &:hover { opacity: 0.88; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+// ── Flatpickr theme override ──────────────────────────────────────────────────
+// Overrides flatpickr's default styles to match our design system tokens
+
+.flatpickr-calendar {
+  font-family: $font-main !important;
+  background: var(--panel-bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: $radius-lg !important;
+  box-shadow: var(--shadow-md) !important;
+  color: var(--text-primary) !important;
+
+  &.arrowTop::before, &.arrowTop::after { display: none; }
+
+  .flatpickr-months {
+    background: var(--bg-surface-2);
+    border-radius: $radius-lg $radius-lg 0 0;
+    padding: $space-2;
+
+    .flatpickr-month {
+      color: var(--text-primary);
+      height: 36px;
+    }
+
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+      color: var(--text-secondary) !important;
+      fill: var(--text-secondary) !important;
+      padding: 6px;
+
+      &:hover {
+        color: var(--text-primary) !important;
+        fill: var(--text-primary) !important;
+        background: var(--border);
+        border-radius: $radius-sm;
+      }
+    }
+
+    .flatpickr-current-month {
+      font-size: $text-sm;
+      font-weight: 600;
+
+      .flatpickr-monthDropdown-months {
+        background: transparent;
+        color: var(--text-primary);
+        font-family: $font-main;
+        font-size: $text-sm;
+        font-weight: 600;
+      }
+
+      input.cur-year {
+        color: var(--text-primary);
+        font-family: $font-main;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .flatpickr-weekdays {
+    background: var(--bg-surface-2);
+
+    .flatpickr-weekday {
+      color: var(--text-muted);
+      font-size: $text-xs;
+      font-weight: 600;
+    }
+  }
+
+  .flatpickr-days {
+    border: none !important;
+
+    .dayContainer { padding: $space-2; }
+
+    .flatpickr-day {
+      color: var(--text-primary);
+      border-radius: $radius-md;
+      font-size: $text-sm;
+      height: 34px;
+      line-height: 34px;
+      border: none;
+
+      &:hover:not(.flatpickr-disabled) {
+        background: var(--bg-surface-2);
+        border-color: transparent;
+      }
+
+      &.today {
+        border-color: var(--border-focus) !important;
+        font-weight: 600;
+      }
+
+      &.selected,
+      &.startRange,
+      &.endRange {
+        background: var(--accent) !important;
+        color: var(--text-inverse) !important;
+        border-color: var(--accent) !important;
+        border-radius: $radius-md !important;
+      }
+
+      &.inRange {
+        background: var(--bg-surface-2) !important;
+        border-color: transparent !important;
+        box-shadow: none !important;
+        color: var(--text-primary);
+      }
+
+      &.startRange { border-radius: $radius-md 0 0 $radius-md !important; }
+      &.endRange   { border-radius: 0 $radius-md $radius-md 0 !important; }
+
+      &.flatpickr-disabled {
+        color: var(--text-muted) !important;
+        opacity: 0.4;
+      }
+
+      &.prevMonthDay,
+      &.nextMonthDay {
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  // Time picker
+  .flatpickr-time {
+    border-top: 1px solid var(--border) !important;
+    background: var(--bg-surface-2) !important;
+    border-radius: 0 0 $radius-lg $radius-lg !important;
+
+    input {
+      color: var(--text-primary) !important;
+      background: transparent !important;
+      font-family: $font-main !important;
+      font-size: $text-sm !important;
+      font-weight: 600 !important;
+
+      &:hover, &:focus {
+        background: var(--bg-surface) !important;
+      }
+    }
+
+    .flatpickr-time-separator,
+    .flatpickr-am-pm {
+      color: var(--text-secondary) !important;
+    }
+
+    .numInputWrapper span {
+      border-color: var(--border) !important;
+
+      &:hover { background: var(--bg-surface) !important; }
+
+      &::after {
+        border-top-color: var(--text-muted) !important;
+        border-bottom-color: var(--text-muted) !important;
+      }
+    }
+  }
 }

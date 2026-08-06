@@ -40,3 +40,8 @@ pub async fn export_logs() -> Result<String, DbError> {
 pub async fn import_logs(json: String) -> Result<u64, DbError> {
     db::import_logs(&json)
 }
+
+#[tauri::command]
+pub async fn factory_reset() -> Result<(), DbError> {
+    db::factory_reset()
+}
