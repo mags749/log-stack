@@ -50,6 +50,7 @@
   justify-content: center;
   color: var(--text-secondary);
   transition: background $transition-fast, color $transition-fast;
+  cursor: pointer;
 
   &:hover {
     background: var(--bg-surface-2);
@@ -458,13 +459,16 @@
     display: flex;
     flex-direction: row;
     width: 100%;
+
+    & > .field {
+        flex: 1;
+    }
 }
 
 .field {
   display: flex;
   flex-direction: column;
   gap: $space-2;
-  flex: 1;
 
   &__label {
     font-size: $text-xs;
@@ -1387,4 +1391,165 @@ details.dropdown {
       }
     }
   }
+}
+
+.setting-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+dialog.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  max-width: 100%;
+  max-height: 100%;
+  padding: $space-4;
+  margin: 0;
+  border: none;
+  background-color: var(--overlay);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity $transition-normal;
+
+  // ── Open State Animation ──────────────────────────────────────────────────
+  &[open] {
+    opacity: 1;
+    pointer-events: auto;
+
+    article {
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  // ── Modal Card Container ──────────────────────────────────────────────────
+  article {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    max-height: calc(100vh - #{$space-8});
+    display: flex;
+    flex-direction: column;
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+    box-shadow: var(--shadow-panel);
+    overflow: hidden;
+    transform: translateY(12px) scale(0.98);
+    transition: transform $transition-normal;
+
+    // ── Header ──────────────────────────────────────────────────────────────
+    header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: $space-4 $space-6;
+      border-bottom: 1px solid var(--border);
+      background-color: var(--bg-surface);
+
+      h3 {
+        margin: 0;
+        font-family: $font-main;
+        font-size: $text-xl;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      // Close Icon Button
+      .close-btn {
+        position: absolute;
+        top: $space-4;
+        right: $space-4;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        margin: 0;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: $radius-sm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color $transition-fast, color $transition-fast;
+
+        &::before {
+          content: "✕";
+          font-size: $text-lg;
+          line-height: 1;
+        }
+
+        &:hover {
+          background-color: var(--bg-surface-2);
+          color: var(--text-primary);
+        }
+
+        &:focus-visible {
+          outline: none;
+          box-shadow: 0 0 0 2px var(--border-focus);
+        }
+      }
+    }
+
+    // ── Body Content ────────────────────────────────────────────────────────
+    .modal-content {
+      padding: $space-6;
+      overflow-y: auto;
+      font-family: $font-main;
+      font-size: $text-base;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    // ── Footer ──────────────────────────────────────────────────────────────
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: $space-3;
+      padding: $space-4 $space-6;
+      border-top: 1px solid var(--border);
+      background-color: var(--bg-surface);
+
+      button {
+        padding: $space-2 $space-5;
+        font-family: $font-main;
+        font-size: $text-sm;
+        font-weight: 500;
+        border-radius: $radius-md;
+        cursor: pointer;
+        transition: background-color $transition-fast, border-color $transition-fast;
+
+        &.secondary {
+          background-color: var(--bg-surface-2);
+          border: 1px solid var(--border);
+          color: var(--text-primary);
+
+          &:hover {
+            border-color: var(--text-secondary);
+          }
+        }
+      }
+    }
+  }
+}
+
+
+.star-link {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 4px;
 }

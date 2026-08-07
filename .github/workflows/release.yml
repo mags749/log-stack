@@ -4,23 +4,23 @@ on:
   push:
     tags:
       - "v*" # Triggers on version tags (e.g. v1.0.0)
-    branches:
-      - main # Allows testing builds on main branch pushes
   workflow_dispatch: # Allows manual trigger from Actions tab
 
 env:
-  CARGO_INCREMENTAL: 0 # Disables incremental compilation overhead for faster CI builds
+  CARGO_INCREMENTAL: 0
+
+# Setting permissions globally fixes "Resource not accessible" on ALL jobs
+permissions:
+  contents: write
 
 jobs:
   build-app:
     name: "Build (${{ matrix.platform }})"
     runs-on: ${{ matrix.platform }}
-    continue-on-error: true # Ensures completed builds proceed if one OS fails
-    permissions:
-      contents: write
+    continue-on-error: true
 
     strategy:
-      fail-fast: false # Keeps other OS matrix builds running if one fails
+      fail-fast: false
       matrix:
         include:
           - platform: "macos-latest"
@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tauri-builds-${{ matrix.platform }}
-          retention-days: 1 # Deletes temporary artifacts after 1 day to save storage space
+          retention-days: 1
           path: |
             src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
             src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
@@ -103,8 +103,6 @@ jobs:
     needs: build-app
     if: always()
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout repository
@@ -114,7 +112,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: tauri-builds-*
-          merge-multiple: true
           path: ./release-assets
 
       - name: Create GitHub Release
@@ -122,9 +119,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest-build' }}
-          name: ${{ github.ref_type == 'tag' && format('Log Stack {0}', github.ref_name) || 'Log Stack (Continuous Build)' }}
-          body: "Automated release build for Log Stack."
+          tag_name: ${{ github.ref_name }}
+          name: "Log Stack ${{ github.ref_name }}"
+          body: |
+                      ## Log Stack ${{ github.ref_name }}
+
+                      ### 📦 Downloads
+                      * **macOS**: `.dmg` (Apple Silicon)
+                      * **Windows**: `.msi` / `.exe`
+                      * **Linux**: `.AppImage` / `.deb`
+
+                      ---
+                      *Automated build created by GitHub Actions.*
           draft: false
-          prerelease: ${{ github.ref_type != 'tag' }}
-          files: ./release-assets/*
+          prerelease: false
+          files: ./release-assets/**/*

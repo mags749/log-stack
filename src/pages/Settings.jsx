@@ -1,9 +1,11 @@
 import { createSignal, createEffect, For } from "solid-js";
+import { open } from "@tauri-apps/plugin-shell";
 import { store, saveSettings, navigateTo, showToast, doFactoryReset, loadSettings, loadLogs } from "../store";
 import { api } from "../utils/api";
 import { TIMEZONES, DATE_FORMATS } from '../utils/date';
-import { IconBack, IconUpload, IconDownload, IconWarning } from "../components/Icons";
+import { IconBack, IconUpload, IconDownload, IconWarning, IconHelp } from "../components/Icons";
 import { PicoDropdown } from "../components/PicoDropdown";
+import Modal from "../components/Modal";
 
 const RATING_LABELS = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
@@ -18,6 +20,7 @@ const Settings = () => {
   const [saving, setSaving] = createSignal(false);
   const [confirmReset, setConfirmReset] = createSignal(false);
   const [resetting, setResetting] = createSignal(false);
+  const [modalIsOpen, setModalIsOpen] = createSignal(false);
 
   createEffect(() => {
     const settings = s();
@@ -87,6 +90,11 @@ const Settings = () => {
       await loadSettings();
       navigateTo("home");
     }
+  }
+
+  const openExternalLink = async(url) => {
+    // Opens the URL in the system's default browser
+    await open(url);
   }
 
   return (
@@ -225,13 +233,37 @@ const Settings = () => {
         </section>
 
         {/* Save */}
-        <div>
+        <div class="setting-footer">
           <button class="btn btn--primary" onClick={handleSave} disabled={saving()} type="button">
             {saving() ? "Saving…" : "Save settings"}
           </button>
+          <button class="icon-btn" onClick={() => setModalIsOpen(true)} aria-label="information-help">
+            <IconHelp />
+          </button>
         </div>
-
       </div>
+      <Show when={modalIsOpen()}>
+        <Modal
+          heading="About app"
+          modalIsOpen={modalIsOpen()}
+          handleClose={() => setModalIsOpen(false)}
+        >
+          <div class="star-link">
+          <p>Made by:</p>
+          <button onClick={() => openExternalLink("https://yogirajpujari.dev/")} aria-label="information-help" style="cursor: pointer;">
+            <label style="font-weight: 700; text-decoration: underline;">Yogiraj Pujari</label>
+            </button>
+          </div>
+
+          <div class="star-link">
+            <p>Care for a </p>
+            <button class="icon-btn" onClick={() => openExternalLink("https://github.com/mags749/log-stack")} aria-label="information-help">
+              ★
+            </button>
+          </div>
+
+        </Modal>
+      </Show>
     </div>
   );
 }

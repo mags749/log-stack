@@ -24,13 +24,19 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'"
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'",
+      "capabilities": [
+        {
+          "identifier": "default-capability",
+          "description": "Permissions for main window",
+          "windows": ["main"],
+          "permissions": ["core:default", "shell:allow-open"]
+        }
+      ]
     }
   },
   "plugins": {
-    "fs": {
-
-    }
+    "fs": {}
   },
   "bundle": {
     "active": true,
