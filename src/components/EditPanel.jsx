@@ -144,46 +144,46 @@ const EditPanel = () => {
             />
           </div>
 
-          <div class="field">
-            <label class="field__label">References</label>
-            <div class="ref-list">
-              <For each={refs()}>
-                {(ref, i) => (
-                  <div class="ref-row">
-                    <div>
-                      <input
-                        class="field__input"
-                        style={{ "font-size": "0.75rem", padding: "6px 8px" }}
-                        placeholder="Type"
-                        value={ref.type}
-                        onInput={(e) => updateRef(i(), "type", e.target.value)}
-                      />
-                    </div>
-                    <div style={{ display: "flex", "flex-direction": "column", gap: "6px" }}>
-                      <input
-                        class="field__input"
-                        style={{ "font-size": "0.75rem", padding: "6px 8px" }}
-                        placeholder="Label"
-                        value={ref.label}
-                        onInput={(e) => updateRef(i(), "label", e.target.value)}
-                      />
-                      <input
-                        class="field__input"
-                        style={{ "font-size": "0.75rem", padding: "6px 8px" }}
-                        placeholder="https://..."
-                        value={ref.url}
-                        onInput={(e) => updateRef(i(), "url", e.target.value)}
-                      />
-                    </div>
-                    <button class="ref-row__remove" onClick={() => removeRef(i())} title="Remove">✕</button>
+        {/* <div class="field">
+          <label class="field__label">References</label>
+          <div class="ref-list">
+            <For each={refs()}>
+              {(ref, i) => (
+                <div class="ref-row">
+                  <div>
+                    <input
+                      class="field__input"
+                      style={{ "font-size": "0.75rem", padding: "6px 8px" }}
+                      placeholder="Type"
+                      value={ref.type}
+                      onInput={(e) => updateRef(i(), "type", e.target.value)}
+                    />
                   </div>
-                )}
-              </For>
-            </div>
-            <button class="btn-add-ref" onClick={addRef} type="button">
-              <IconPlus /> Add reference
-            </button>
+                  <div style={{ display: "flex", "flex-direction": "column", gap: "6px" }}>
+                    <input
+                      class="field__input"
+                      style={{ "font-size": "0.75rem", padding: "6px 8px" }}
+                      placeholder="Label"
+                      value={ref.label}
+                      onInput={(e) => updateRef(i(), "label", e.target.value)}
+                    />
+                    <input
+                      class="field__input"
+                      style={{ "font-size": "0.75rem", padding: "6px 8px" }}
+                      placeholder="https://..."
+                      value={ref.url}
+                      onInput={(e) => updateRef(i(), "url", e.target.value)}
+                    />
+                  </div>
+                  <button class="ref-row__remove" onClick={() => removeRef(i())} title="Remove">✕</button>
+                </div>
+              )}
+            </For>
           </div>
+          <button class="btn-add-ref" onClick={addRef} type="button">
+            <IconPlus /> Add reference
+          </button>
+        </div>*/}
 
         </div>
 
