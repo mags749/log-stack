@@ -3,7 +3,7 @@ import { store, addLog, navigateTo } from "../store";
 import { getFirstName, getGreeting } from "../utils/date";
 import Timeline from "../components/Timeline";
 import EditPanel from "../components/EditPanel";
-import { IconGear, IconArrow, IconLogs } from "../components/Icons";
+import { IconGear, IconArrow, IconLogs, IconKanban } from "../components/Icons";
 
 const Home = () => {
   const [message, setMessage] = createSignal("");
@@ -48,6 +48,14 @@ const Home = () => {
               {store.totalCount} {store.totalCount === 1 ? "log" : "logs"}
             </span>
           </Show>
+          <button
+            class="icon-btn"
+            onClick={() => navigateTo("todos")}
+            aria-label="Todo board"
+            title="Todo Board"
+          >
+            <IconKanban />
+          </button>
           <button
             class="icon-btn"
             onClick={() => navigateTo("logs")}

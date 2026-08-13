@@ -3,6 +3,7 @@ import { store, loadLogs, loadSettings, setLoading } from "./store";
 import Home from "./pages/Home";
 import Settings from "./pages/Settings";
 import Logs from "./pages/Logs";
+import Todos from "./pages/Todos";
 import Onboarding from "./components/Onboarding";
 import Toast from "./components/Toast";
 
@@ -29,6 +30,9 @@ const App = () => {
         </Show>
         <Show when={store.page === "logs"}>
           <Logs />
+        </Show>
+        <Show when={store.page === "todos"}>
+          <Todos />
         </Show>
       </Show>
 

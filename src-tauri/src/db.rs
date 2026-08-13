@@ -7,6 +7,7 @@ use thiserror::Error;
 // ── Table definitions ─────────────────────────────────────────────────────────
 const LOGS_TABLE: TableDefinition<u64, &str> = TableDefinition::new("logs");
 const SETTINGS_TABLE: TableDefinition<&str, &str> = TableDefinition::new("settings");
+const TODOS_TABLE: TableDefinition<u64, &str> = TableDefinition::new("todos");
 
 // ── Global DB instance ────────────────────────────────────────────────────────
 static DB: OnceCell<Database> = OnceCell::new();
@@ -63,6 +64,8 @@ pub struct LogEntry {
     pub timestamp: DateTime<Utc>,
     pub rating: u8,
     pub references: Vec<LogReference>,
+    #[serde(default)]
+    pub is_system_generated: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,6 +79,8 @@ pub struct CreateLogInput {
     pub message: String,
     pub rating: Option<u8>,
     pub timestamp: Option<DateTime<Utc>>,
+    #[serde(default)]
+    pub is_system_generated: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -107,6 +112,39 @@ impl Default for Settings {
     }
 }
 
+// ── Todo models ───────────────────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum TodoStatus {
+    Todo,
+    Doing,
+    Done,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TodoEntry {
+    pub id: u64,
+    pub title: String,
+    pub description: String,
+    pub status: TodoStatus,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateTodoInput {
+    pub title: String,
+    pub description: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateTodoInput {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub status: Option<TodoStatus>,
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 pub fn init(db_path: &str) -> Result<(), DbError> {
@@ -118,6 +156,7 @@ pub fn init(db_path: &str) -> Result<(), DbError> {
     {
         write_txn.open_table(LOGS_TABLE)?;
         write_txn.open_table(SETTINGS_TABLE)?;
+        write_txn.open_table(TODOS_TABLE)?;
     }
     write_txn.commit()?;
 
@@ -144,6 +183,19 @@ fn next_id() -> Result<u64, DbError> {
     Ok(max + 1)
 }
 
+fn next_todo_id() -> Result<u64, DbError> {
+    let db = get_db()?;
+    let read_txn = db.begin_read()?;
+    let table = read_txn.open_table(TODOS_TABLE)?;
+    let max = table
+        .iter()?
+        .filter_map(|r| r.ok())
+        .map(|(k, _)| k.value())
+        .max()
+        .unwrap_or(0);
+    Ok(max + 1)
+}
+
 // ── Log CRUD ──────────────────────────────────────────────────────────────────
 
 pub fn create_log(input: CreateLogInput, default_rating: u8) -> Result<LogEntry, DbError> {
@@ -156,6 +208,7 @@ pub fn create_log(input: CreateLogInput, default_rating: u8) -> Result<LogEntry,
         timestamp: input.timestamp.unwrap_or_else(Utc::now),
         rating: input.rating.unwrap_or(default_rating).clamp(1, 5),
         references: vec![],
+        is_system_generated: input.is_system_generated,
     };
 
     let json = serde_json::to_string(&entry)?;
@@ -284,11 +337,9 @@ pub fn import_logs(json: &str) -> Result<u64, DbError> {
 pub fn factory_reset() -> Result<(), DbError> {
     let db = get_db()?;
 
-    // Clear all logs
     let write_txn = db.begin_write()?;
     {
         let mut logs_table = write_txn.open_table(LOGS_TABLE)?;
-        // Collect keys first to avoid borrow issues
         let keys: Vec<u64> = logs_table
             .iter()?
             .filter_map(|r| r.ok())
@@ -300,8 +351,105 @@ pub fn factory_reset() -> Result<(), DbError> {
 
         let mut settings_table = write_txn.open_table(SETTINGS_TABLE)?;
         settings_table.remove("settings")?;
+
+        let mut todos_table = write_txn.open_table(TODOS_TABLE)?;
+        let todo_keys: Vec<u64> = todos_table
+            .iter()?
+            .filter_map(|r| r.ok())
+            .map(|(k, _)| k.value())
+            .collect();
+        for key in todo_keys {
+            todos_table.remove(key)?;
+        }
     }
     write_txn.commit()?;
 
+    Ok(())
+}
+
+// ── Todo CRUD ─────────────────────────────────────────────────────────────────
+
+pub fn create_todo(input: CreateTodoInput) -> Result<TodoEntry, DbError> {
+    let db = get_db()?;
+    let id = next_todo_id()?;
+    let now = Utc::now();
+
+    let entry = TodoEntry {
+        id,
+        title: input.title,
+        description: input.description.unwrap_or_default(),
+        status: TodoStatus::Todo,
+        created_at: now,
+        updated_at: now,
+    };
+
+    let json = serde_json::to_string(&entry)?;
+    let write_txn = db.begin_write()?;
+    {
+        let mut table = write_txn.open_table(TODOS_TABLE)?;
+        table.insert(id, json.as_str())?;
+    }
+    write_txn.commit()?;
+    Ok(entry)
+}
+
+pub fn get_todo(id: u64) -> Result<TodoEntry, DbError> {
+    let db = get_db()?;
+    let read_txn = db.begin_read()?;
+    let table = read_txn.open_table(TODOS_TABLE)?;
+    let value = table.get(id)?.ok_or(DbError::NotFound)?;
+    let entry: TodoEntry = serde_json::from_str(value.value())?;
+    Ok(entry)
+}
+
+pub fn list_todos() -> Result<Vec<TodoEntry>, DbError> {
+    let db = get_db()?;
+    let read_txn = db.begin_read()?;
+    let table = read_txn.open_table(TODOS_TABLE)?;
+
+    let mut todos: Vec<TodoEntry> = table
+        .iter()?
+        .filter_map(|r| r.ok())
+        .filter_map(|(_, v)| serde_json::from_str::<TodoEntry>(v.value()).ok())
+        .filter(|t| t.status != TodoStatus::Done)
+        .collect();
+
+    todos.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+    Ok(todos)
+}
+
+pub fn update_todo(id: u64, input: UpdateTodoInput) -> Result<TodoEntry, DbError> {
+    let mut entry = get_todo(id)?;
+
+    if let Some(title) = input.title {
+        entry.title = title;
+    }
+    if let Some(description) = input.description {
+        entry.description = description;
+    }
+    if let Some(status) = input.status {
+        entry.status = status;
+    }
+    entry.updated_at = Utc::now();
+
+    let json = serde_json::to_string(&entry)?;
+    let db = get_db()?;
+    let write_txn = db.begin_write()?;
+    {
+        let mut table = write_txn.open_table(TODOS_TABLE)?;
+        table.insert(id, json.as_str())?;
+    }
+    write_txn.commit()?;
+    Ok(entry)
+}
+
+pub fn delete_todo(id: u64) -> Result<(), DbError> {
+    let db = get_db()?;
+    let write_txn = db.begin_write()?;
+    {
+        let mut table = write_txn.open_table(TODOS_TABLE)?;
+        table.remove(id)?;
+    }
+    write_txn.commit()?;
     Ok(())
 }
