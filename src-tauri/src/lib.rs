@@ -39,6 +39,10 @@ pub fn run() {
             commands::export_logs,
             commands::import_logs,
             commands::factory_reset,
+            commands::create_todo,
+            commands::list_todos,
+            commands::update_todo,
+            commands::delete_todo,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
