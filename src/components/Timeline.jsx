@@ -25,14 +25,12 @@ const Timeline = () => {
             <div class="day-group animate-slide-up">
               <div class="day-group__header">
                 <span class="day-group__date">{group.dateLabel}</span>
-                <span class="day-group__count">
-                  {group.logs.length}
-                </span>
+                <span class="day-group__count">{group.logs.length}</span>
               </div>
 
               <div class="timeline">
                 <For each={group.logs}>
-                  {(log) => <LogCard log={log} />}
+                  {(log) => <LogRow log={log} />}
                 </For>
               </div>
             </div>
@@ -41,41 +39,29 @@ const Timeline = () => {
       </Show>
     </div>
   );
-}
+};
 
-const LogCard = (props) => {
-  const s = () => store.settings || {};
+const LogRow = (props) => {
   const log = () => props.log;
-  const r = () => log().rating;
+  const r   = () => log().rating;
+  const s   = () => store.settings || {};
 
-  const formatLogTime = (timestamp) => {
-    const settings = s();
-    return formatTime(timestamp, settings.timezone);
-  }
+  const time = () => formatTime(log().timestamp, s().timezone);
 
   return (
-    <div class="log-entry" onClick={() => selectLog(log().id)}>
+    <div class="log-row" onClick={() => selectLog(log().id)}>
+      {/* Dot sits centered ON the vertical line via absolute positioning */}
+      <div class={`log-row__dot dot-rating-${r()}`} />
 
-      {/* Timeline dot */}
-      <div class={`log-entry__dot dot-rating-${r()}`} />
+      {/* Message — grows to fill available space */}
+      <p class={`log-row__message msg-rating-${r()}`}>
+        {log().message}
+      </p>
 
-      {/* Card */}
-      <div class="log-entry__card">
-        <div class="log-entry__header">
-          <p class={`log-entry__message msg-rating-${r()}`}>
-            {log().message}
-          </p>
-          <div class="log-entry__meta">
-            <span class={`rating-badge rating-${r()}`}>
-              {RATING_LABEL[r()]}
-            </span>
-            <span class="log-entry__time">{formatLogTime(log().timestamp)}</span>
-          </div>
-        </div>
-
-        {/* References */}
+      {/* Right-side meta */}
+      <div class="log-row__meta">
         <Show when={log().references?.length > 0}>
-          <div class="log-entry__refs">
+          <div class="log-row__refs">
             <For each={log().references}>
               {(ref) => (
                 <a
@@ -89,17 +75,18 @@ const LogCard = (props) => {
                   <IconLink />
                   {ref.label}
                   <Show when={ref.type}>
-                    <span style={{ opacity: 0.6 }}>· {ref.type}</span>
+                    <span style={{ opacity: 0.55 }}>· {ref.type}</span>
                   </Show>
                 </a>
               )}
             </For>
           </div>
         </Show>
+        <span class={`rating-badge rating-${r()}`}>{RATING_LABEL[r()]}</span>
+        <span class="log-row__time">{time()}</span>
       </div>
     </div>
   );
-}
-
+};
 
 export default Timeline;

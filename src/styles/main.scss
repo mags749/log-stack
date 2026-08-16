@@ -209,75 +209,69 @@
 .timeline {
   display: flex;
   flex-direction: column;
-  gap: $space-2;
-  padding-left: $space-5;
   position: relative;
+  // Left padding makes room for the dot column (8px dot center + some breathing room)
+  padding-left: 24px;
 
-  // Vertical line
+  // Vertical line — sits at the dot center column
   &::before {
     content: '';
     position: absolute;
     left: 7px;
-    top: 8px;
-    bottom: 8px;
+    top: 0;
+    bottom: 0;
     width: 1px;
     background: var(--timeline-line);
   }
 }
 
-// ── Log entry card ────────────────────────────────────────────────────────────
+// ── Log row (flat single line, no card box) ───────────────────────────────────
 
-.log-entry {
+.log-row {
   display: flex;
-  gap: $space-4;
-  align-items: flex-start;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-1 0;
   position: relative;
   cursor: pointer;
+  min-height: 32px;
 
+  // Subtle highlight on hover — no border/box
+  &:hover {
+    .log-row__message { color: var(--text-primary); }
+    .log-row__dot     { transform: scale(1.25); }
+  }
+
+  // Dot: absolutely positioned so it sits centered ON the vertical line
   &__dot {
-    width: 15px;
-    height: 15px;
+    position: absolute;
+    left: -22.5px;            // (24px padding-left) - (7px line left) - (half dot width ~7px) ≈ -17px from row left edge
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
     border-radius: $radius-full;
-    border: 2px solid var(--bg-app);
-    flex-shrink: 0;
-    margin-top: 12px;
-    position: relative;
+    border: 1.5px solid var(--bg-app);
     z-index: 1;
+    flex-shrink: 0;
     transition: transform $transition-fast;
-  }
 
-  &:hover .log-entry__dot {
-    transform: scale(1.2);
-  }
-
-  &__card {
-    flex: 1;
-    background: var(--bg-surface);
-    border: 1px solid var(--border);
-    border-radius: $radius-lg;
-    padding: $space-4 $space-5;
-    transition: border-color $transition-fast, box-shadow $transition-fast, transform $transition-fast;
-
-    &:hover {
-      border-color: var(--text-muted);
-      box-shadow: var(--shadow-sm);
-      transform: translateX(2px);
+    // Override translateY when hovered (keep centering, add scale)
+    .log-row:hover & {
+      transform: translateY(-50%) scale(1.25);
     }
   }
 
-  &__header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: $space-3;
-    margin-bottom: $space-2;
-  }
-
   &__message {
-    font-size: $text-sm;
-    line-height: 1.65;
-    font-weight: 400;
     flex: 1;
+    font-size: $text-sm;
+    line-height: 1.5;
+    font-weight: 400;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color $transition-fast;
   }
 
   &__meta {
@@ -287,18 +281,19 @@
     flex-shrink: 0;
   }
 
+  &__refs {
+    display: flex;
+    align-items: center;
+    gap: $space-1;
+  }
+
   &__time {
     font-size: $text-xs;
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-  }
-
-  &__refs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $space-2;
-    margin-top: $space-3;
+    min-width: 42px;
+    text-align: right;
   }
 }
 
@@ -547,40 +542,37 @@
 .ref-list {
   display: flex;
   flex-direction: column;
-  gap: $space-3;
+  gap: $space-2;
+  margin-bottom: $space-2;
 }
 
 .ref-row {
-  display: grid;
-  grid-template-columns: 80px 1fr;
+  display: flex;
+  align-items: center;
   gap: $space-2;
-  align-items: start;
-  background: var(--bg-surface-2);
-  border: 1px solid var(--border);
-  border-radius: $radius-md;
-  padding: $space-3;
-  position: relative;
+
+  &__type  { width: 90px;  flex-shrink: 0; font-size: $text-xs !important; padding: 5px 8px !important; }
+  &__label { flex: 1;      font-size: $text-xs !important; padding: 5px 8px !important; }
+  &__url   { flex: 2;      font-size: $text-xs !important; padding: 5px 8px !important; }
 
   &__remove {
-    position: absolute;
-    top: $space-2;
-    right: $space-2;
-    width: 20px;
-    height: 20px;
-    border-radius: $radius-sm;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 11px;
     color: var(--text-muted);
-    font-size: $text-xs;
+    border-radius: $radius-md;
+    cursor: pointer;
     transition: background $transition-fast, color $transition-fast;
 
-    &:hover {
-      background: var(--border);
-      color: var(--text-primary);
-    }
+    &:hover { background: var(--rating-1-bg); color: var(--rating-1); }
   }
 }
+
+
 
 .btn-add-ref {
   display: inline-flex;
@@ -1560,6 +1552,7 @@ dialog.modal {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
   overflow: hidden;
   background: var(--bg-app);
 }
@@ -1571,6 +1564,7 @@ dialog.modal {
   padding: $space-5 $space-8;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
+  width: 100%;
 
   &__title-area {
     flex: 1;
@@ -1596,6 +1590,8 @@ dialog.modal {
   padding: $space-5 $space-8 $space-4;
   flex-shrink: 0;
   border-bottom: 1px solid var(--border);
+  max-width: 1280px;
+  width: 100%;
 }
 
 .todos-form {
@@ -1667,6 +1663,8 @@ dialog.modal {
   padding: $space-5 $space-8 $space-8;
   overflow: hidden;
   min-height: 0;
+  max-width: 1280px;
+  width: 100%;
 }
 
 .kanban-col {
@@ -1726,11 +1724,11 @@ dialog.modal {
 
   // Column accent — left border stripe
   &.col--todo .kanban-col__header {
-    border-bottom: 3px solid var(--rating-2);
+    border-left: 5px solid var(--rating-2);
   }
 
   &.col--doing .kanban-col__header {
-    border-bottom: 3px solid var(--rating-4);
+    border-left: 5px solid var(--rating-4);
   }
 }
 
@@ -1761,7 +1759,7 @@ dialog.modal {
 
 .todo-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: $space-3;
   padding: $space-3 $space-4;
   background: var(--bg-app);
@@ -1969,5 +1967,105 @@ dialog.modal {
     transition: background $transition-fast, color $transition-fast;
 
     &:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+  }
+}
+
+// ── Update modal ──────────────────────────────────────────────────────────────
+
+.update-modal {
+  &__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: $space-4;
+    padding: $space-2 0;
+  }
+
+  &__icon {
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  &__message {
+    font-size: $text-lg;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
+
+  &__version {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  &__sub {
+    font-size: $text-sm;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 340px;
+  }
+
+  &__cta {
+    min-width: 130px;
+  }
+}
+
+// ── Settings — app version row ────────────────────────────────────────────────
+
+.app-version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  padding: $space-3 0;
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+  }
+
+  &__label {
+    font-size: $text-sm;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  &__value {
+    font-size: $text-sm;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border);
+    border-radius: $radius-full;
+    padding: 2px $space-3;
+  }
+
+  &__check-btn {
+    flex-shrink: 0;
+  }
+}
+
+// ── Update modal — progress bar ───────────────────────────────────────────────
+
+.update-modal {
+  &__progress-bar {
+    width: 100%;
+    max-width: 300px;
+    height: 6px;
+    background: var(--bg-surface-2);
+    border-radius: $radius-full;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  &__progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: $radius-full;
+    transition: width 0.2s ease;
+    min-width: 6px;
   }
 }

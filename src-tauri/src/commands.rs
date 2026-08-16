@@ -2,6 +2,11 @@ use crate::db::{self, DbError, LogEntry, LogsResponse, CreateLogInput, UpdateLog
                 TodoEntry, CreateTodoInput, UpdateTodoInput};
 
 #[tauri::command]
+pub async fn get_app_version() -> String {
+    env!("CARGO_PKG_VERSION").to_string()
+}
+
+#[tauri::command]
 pub async fn create_log(input: CreateLogInput) -> Result<LogEntry, DbError> {
     let settings = db::get_settings()?;
     db::create_log(input, settings.default_rating)

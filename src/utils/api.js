@@ -30,6 +30,11 @@ export const api = {
   async factoryReset() {
     return invoke("factory_reset");
   },
+  // ── App version ──────────────────────────────────────────────────────────────
+  async getAppVersion() {
+    return invoke("get_app_version");
+  },
+
   // ── Todo API ────────────────────────────────────────────────────────────────
   async listTodos() {
     return invoke("list_todos");

@@ -1,4 +1,4 @@
-import { createSignal, createEffect, For } from "solid-js";
+import { createSignal, createEffect, For, Show, onMount } from "solid-js";
 import { open } from "@tauri-apps/plugin-shell";
 import { store, saveSettings, navigateTo, showToast, doFactoryReset, loadSettings, loadLogs } from "../store";
 import { api } from "../utils/api";
@@ -9,18 +9,29 @@ import Modal from "../components/Modal";
 
 const RATING_LABELS = { 1: "Routine", 2: "Minor", 3: "Solid", 4: "Great", 5: "Best" };
 
-const Settings = () => {
+const Settings = (props) => {
   const s = () => store.settings || {};
 
-  const [name, setName] = createSignal("");
-  const [dateFormat, setDateFormat] = createSignal("MMM DD, YYYY");
+  const [name,          setName]          = createSignal("");
+  const [dateFormat,    setDateFormat]    = createSignal("MMM DD, YYYY");
   const [defaultRating, setDefaultRating] = createSignal(1);
-  const [timezone, setTimezone] = createSignal("UTC");
-  const [theme, setTheme] = createSignal("light");
-  const [saving, setSaving] = createSignal(false);
-  const [confirmReset, setConfirmReset] = createSignal(false);
-  const [resetting, setResetting] = createSignal(false);
-  const [modalIsOpen, setModalIsOpen] = createSignal(false);
+  const [timezone,      setTimezone]      = createSignal("UTC");
+  const [theme,         setTheme]         = createSignal("light");
+  const [saving,        setSaving]        = createSignal(false);
+  const [confirmReset,  setConfirmReset]  = createSignal(false);
+  const [resetting,     setResetting]     = createSignal(false);
+  const [modalIsOpen,   setModalIsOpen]   = createSignal(false);
+
+  // Version & update state
+  const [appVersion,    setAppVersion]    = createSignal("…");
+  const [checkingUpdate, setCheckingUpdate] = createSignal(false);
+
+  onMount(async () => {
+    try {
+      const v = await api.getAppVersion();
+      setAppVersion(v);
+    } catch (_) {}
+  });
 
   createEffect(() => {
     const settings = s();
@@ -36,22 +47,22 @@ const Settings = () => {
   const handleSave = async () => {
     setSaving(true);
     await saveSettings({
-      user_name: name(),
-      date_format: dateFormat(),
+      user_name:      name(),
+      date_format:    dateFormat(),
       default_rating: defaultRating(),
-      timezone: timezone(),
-      theme: theme(),
+      timezone:       timezone(),
+      theme:          theme(),
     });
     setSaving(false);
-  }
+  };
 
   const handleExport = async () => {
     try {
       const json = await api.exportLogs();
       const blob = new Blob([json], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
       a.download = `log-stack-export-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
@@ -59,17 +70,17 @@ const Settings = () => {
     } catch (e) {
       showToast(`Export failed: ${e}`, "error");
     }
-  }
+  };
 
   const handleImport = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
+    const input    = document.createElement("input");
+    input.type     = "file";
+    input.accept   = ".json";
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       try {
-        const text = await file.text();
+        const text  = await file.text();
         const count = await api.importLogs(text);
         showToast(`Imported ${count} logs`, "success");
         await loadLogs();
@@ -78,7 +89,7 @@ const Settings = () => {
       }
     };
     input.click();
-  }
+  };
 
   const handleFactoryReset = async () => {
     setResetting(true);
@@ -86,16 +97,28 @@ const Settings = () => {
     setResetting(false);
     setConfirmReset(false);
     if (ok) {
-      // Reload settings (now blank) to reset local signals
       await loadSettings();
       navigateTo("home");
     }
-  }
+  };
 
-  const openExternalLink = async(url) => {
-    // Opens the URL in the system's default browser
-    await open(url);
-  }
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    try {
+      const result = await props.onCheckUpdate({ silent: false });
+      // If no update modal was triggered (result.upToDate), show toast
+      if (result?.upToDate) {
+        showToast("You're already on the latest version ✓", "success");
+      }
+      // If update IS available, App.jsx will show the modal automatically
+    } catch (e) {
+      showToast(`Update check failed: ${e}`, "error");
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  const openExternalLink = async (url) => { await open(url); };
 
   return (
     <div class="settings-page">
@@ -165,19 +188,14 @@ const Settings = () => {
               <div class="field">
                 <label class="field__label">Date format</label>
                 <PicoDropdown
-                  value={dateFormat()}
-                  onChange={setDateFormat}
-                  options={DATE_FORMATS}
-                  placeholder="Date format" />
+                  value={dateFormat()} onChange={setDateFormat}
+                  options={DATE_FORMATS} placeholder="Date format" />
               </div>
-
               <div class="field">
                 <label class="field__label">Timezone</label>
-                  <PicoDropdown
-                    value={timezone()}
-                    onChange={setTimezone}
-                    options={TIMEZONES}
-                    placeholder="Timezone for the date" />
+                <PicoDropdown
+                  value={timezone()} onChange={setTimezone}
+                  options={TIMEZONES} placeholder="Timezone for the date" />
               </div>
             </div>
           </div>
@@ -196,6 +214,27 @@ const Settings = () => {
           </div>
         </section>
 
+        {/* App — version + update check */}
+        <section class="settings-section">
+          <h2 class="settings-section__title">App</h2>
+          <div class="settings-section__fields">
+            <div class="app-version-row">
+              <div class="app-version-row__info">
+                <span class="app-version-row__label">Version</span>
+                <span class="app-version-row__value">v{appVersion()}</span>
+              </div>
+              <button
+                class="btn btn--ghost app-version-row__check-btn"
+                onClick={handleCheckUpdate}
+                disabled={checkingUpdate()}
+                type="button"
+              >
+                {checkingUpdate() ? "Checking…" : "Check for update"}
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* Danger zone */}
         <section class="settings-section settings-section--danger">
           <h2 class="settings-section__title settings-section__title--danger">Danger zone</h2>
@@ -203,7 +242,6 @@ const Settings = () => {
             <p class="settings-danger__desc">
               Factory reset will permanently delete all logs and settings. This cannot be undone.
             </p>
-
             {confirmReset() ? (
               <div class="reset-confirm">
                 <div class="reset-confirm__warning">
@@ -242,6 +280,7 @@ const Settings = () => {
           </button>
         </div>
       </div>
+
       <Show when={modalIsOpen()}>
         <Modal
           heading="About app"
@@ -249,23 +288,21 @@ const Settings = () => {
           handleClose={() => setModalIsOpen(false)}
         >
           <div class="star-link">
-          <p>Made by:</p>
-          <button onClick={() => openExternalLink("https://yogirajpujari.dev/")} aria-label="information-help" style="cursor: pointer;">
-            <label style="font-weight: 700; text-decoration: underline;">Yogiraj Pujari</label>
+            <p>Made by:</p>
+            <button onClick={() => openExternalLink("https://yogirajpujari.dev/")} style="cursor: pointer;">
+              <label style="font-weight: 700; text-decoration: underline;">Yogiraj Pujari</label>
             </button>
           </div>
-
           <div class="star-link">
             <p>Care for a </p>
-            <button class="icon-btn" onClick={() => openExternalLink("https://github.com/mags749/log-stack")} aria-label="information-help">
+            <button class="icon-btn" onClick={() => openExternalLink("https://github.com/mags749/log-stack")}>
               ★
             </button>
           </div>
-
         </Modal>
       </Show>
     </div>
   );
-}
+};
 
 export default Settings;
