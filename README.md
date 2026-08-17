@@ -147,3 +147,11 @@ redb stores data at:
 Two tables:
 - `logs` — key: `u64` (auto-increment ID), value: JSON string of log entry
 - `settings` — key: `"settings"`, value: JSON string of settings object
+
+---
+
+## Downloaded from Github
+
+```script
+sudo xattr -rd com.apple.quarantine /Applications/Log\ Stack.app
+```
