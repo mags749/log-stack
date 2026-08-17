@@ -3,51 +3,94 @@ name: "Log stack build"
 on:
   push:
     tags:
-      - "v*" # Triggers on version tags (e.g. v1.0.0)
-  workflow_dispatch: # Allows manual trigger from Actions tab
-
-env:
-  CARGO_INCREMENTAL: 0
+      - "v*"
 
 permissions:
   contents: write
 
-jobs:
-  build-and-publish:
-    name: "Build & Publish (${{ matrix.platform }})"
-    runs-on: ${{ matrix.platform }}
-    continue-on-error: true
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
+jobs:
+  release:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    # A failed platform must not cancel the other platforms.
     strategy:
       fail-fast: false
+      max-parallel: 4
+
       matrix:
         include:
-          - platform: "macos-latest"
-            target: "aarch64-apple-darwin"
+          - name: macOS ARM64
+            os: macos-latest
+            target: aarch64-apple-darwin
             args: "--target aarch64-apple-darwin"
-          - platform: "ubuntu-22.04"
-            target: "x86_64-unknown-linux-gnu"
-            args: ""
-          - platform: "windows-latest"
-            target: "x86_64-pc-windows-msvc"
-            args: ""
+
+          - name: Windows x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            args: "--target x86_64-pc-windows-msvc"
+
+          - name: Linux x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: "--target x86_64-unknown-linux-gnu"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: 24
-          cache: "npm"
+          cache: npm
 
-      - name: Install Rust stable
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      - name: Rust cache
+      - name: Cache Rust
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: "./src-tauri -> target"
+          workspaces: |
+            src-tauri -> target
+          key: ${{ matrix.target }}
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install dependencies
+        run: npm i --prefer-offline
+
+      - name: Build and publish Tauri app
+        uses: tauri-apps/tauri-action@v0.6.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          # Tauri updater signing
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Log stack ${{ github.ref_name }}"
+          generateReleaseNotes: true
+          releaseDraft: false
+          prerelease: false
+          # Retry transient upload failures
+          retryAttempts: 3
+          args: ${{ matrix.args }}
