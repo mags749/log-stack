@@ -1,6 +1,6 @@
 [package]
 name = "log-stack"
-version = "1.1.0"
+version = "1.1.2"
 description = "Daily Logger"
 authors = ["mags749@yahoo.com"]
 edition = "2021"

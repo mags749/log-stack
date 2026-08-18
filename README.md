@@ -8,7 +8,7 @@ A fast, minimal desktop app for recording daily logs with a timeline view.
 |---|---|
 | Shell | Tauri 2 |
 | UI | Solid.js + JSX |
-| Styling | SCSS → CSS (Work Sans font) |
+| Styling | SCSS → CSS (Red Hat Text font) |
 | State | Solid Store (fine-grained reactivity) |
 | Database | redb (embedded key-value, pure Rust) |
 | Build | Vite + vite-plugin-solid |

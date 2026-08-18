@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Text:ital,wght@0,300..700;1,300..700&display=swap');
 
 // ── Typography ────────────────────────────────────────────────────────────────
-$font-main: 'Work Sans', system-ui, sans-serif;
+$font-main: 'Red Hat Text', system-ui, sans-serif;
 
 // ── Light theme tokens (default) ──────────────────────────────────────────────
 :root {
@@ -53,6 +53,159 @@ $font-main: 'Work Sans', system-ui, sans-serif;
   --shadow-panel:  -8px 0 40px rgba(0,0,0,0.10);
 }
 
+// ── Sage theme tokens ──────────────────────────────────────────────
+
+[data-theme="sage"] {
+  // Backgrounds
+  --bg-app:        #DCE1DE;   // Light Gray-Green
+  --bg-surface:    #FFFFFF;
+  --bg-surface-2:  #C8D1CC;
+  --bg-input:      #FFFFFF;
+
+  // Borders
+  --border:        #B5C2BB;
+  --border-focus:  #216869;
+
+  // Text
+  --text-primary:  #1F2421;   // Charcoal / Dark Slate
+  --text-secondary:#216869;   // Deep Teal
+  --text-muted:    #5A7265;
+  --text-inverse:  #FFFFFF;
+
+  // Rating colors (1=routine, 5=best)
+  --rating-1:      #C94040;   // red
+  --rating-2:      #E07A3A;   // orange
+  --rating-3:      #E8A838;   // amber
+  --rating-4:      #216869;   // deep teal
+  --rating-5:      #49A078;   // ocean green
+
+  // Rating backgrounds
+  --rating-1-bg:   #FBEAEA;
+  --rating-2-bg:   #FDF0E8;
+  --rating-3-bg:   #FDF6E8;
+  --rating-4-bg:   #E4EFEF;
+  --rating-5-bg:   #E6F2EC;
+
+  // Accent
+  --accent:        #216869;   // Deep Teal
+  --accent-hover:  #184F50;
+
+  // Panel / overlay
+  --overlay:       rgba(31, 36, 33, 0.3);
+  --panel-bg:      #FFFFFF;
+
+  // Timeline
+  --timeline-line: #B5C2BB;
+  --timeline-dot:  #49A078;
+
+  // Shadows
+  --shadow-sm:     0 1px 3px rgba(31, 36, 33, 0.08), 0 1px 2px rgba(31, 36, 33, 0.04);
+  --shadow-md:     0 4px 16px rgba(31, 36, 33, 0.1), 0 2px 4px rgba(31, 36, 33, 0.04);
+  --shadow-panel:  -8px 0 40px rgba(31, 36, 33, 0.15);
+}
+
+// ── Dark theme - Slate ────────────────────────────────────────────────────────────────
+
+[data-theme="slate"] {
+  // Backgrounds
+  --bg-app:        #0D1B2A;   // Rich Dark Navy
+  --bg-surface:    #1B263B;   // Deep Blue Surface
+  --bg-surface-2:  #25344D;   // Lighter Surface Offset
+  --bg-input:      #132033;   // Input Background
+
+  // Borders
+  --border:        #2E4159;
+  --border-focus:  #778DA9;
+
+  // Text
+  --text-primary:  #E0E1DD;   // Off-White / Platinum
+  --text-secondary:#778DA9;   // Soft Steel
+  --text-muted:    #415A77;   // Muted Slate Blue
+  --text-inverse:  #0D1B2A;
+
+  // Rating colors (1=routine, 5=best)
+  --rating-1:      #E05252;   // red
+  --rating-2:      #E58544;   // orange
+  --rating-3:      #E8B448;   // amber
+  --rating-4:      #415A77;   // slate blue
+  --rating-5:      #778DA9;   // steel blue / best
+
+  // Rating backgrounds
+  --rating-1-bg:   #2A1618;
+  --rating-2-bg:   #2B1B14;
+  --rating-3-bg:   #2C2314;
+  --rating-4-bg:   #152336;
+  --rating-5-bg:   #1D2E45;
+
+  // Accent
+  --accent:        #778DA9;   // Soft Steel
+  --accent-hover:  #A3B1C6;
+
+  // Panel / overlay
+  --overlay:       rgba(13, 27, 42, 0.7);
+  --panel-bg:      #1B263B;
+
+  // Timeline
+  --timeline-line: #2E4159;
+  --timeline-dot:  #778DA9;
+
+  // Shadows
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:     0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-panel:  -8px 0 40px rgba(0, 0, 0, 0.6);
+}
+
+// ── Dark theme - Cyberpunk ────────────────────────────────────────────────────────────────
+
+[data-theme="cyberpunk"] {
+  // Backgrounds
+  --bg-app:        #090D16;
+  --bg-surface:    #111827;
+  --bg-surface-2:  #1F293D;
+  --bg-input:      #0D1322;
+
+  // Borders
+  --border:        #26334D;
+  --border-focus:  #FF007A;
+
+  // Text
+  --text-primary:  #F8FAFC;
+  --text-secondary:#94A3B8;
+  --text-muted:    #475569;
+  --text-inverse:  #090D16;
+
+  // Rating colors (1=routine, 5=best)
+  --rating-1:      #FF2A6D;   // neon pink
+  --rating-2:      #FF7700;   // electric orange
+  --rating-3:      #FFE600;   // neon yellow
+  --rating-4:      #05D9E8;   // cyan
+  --rating-5:      #00FF9F;   // electric mint
+
+  // Rating backgrounds
+  --rating-1-bg:   #2A081A;
+  --rating-2-bg:   #2A1400;
+  --rating-3-bg:   #2A2600;
+  --rating-4-bg:   #002530;
+  --rating-5-bg:   #002B1B;
+
+  // Accent
+  --accent:        #FF007A;
+  --accent-hover:  #FF3396;
+
+  // Panel / overlay
+  --overlay:       rgba(0, 0, 0, 0.75);
+  --panel-bg:      #111827;
+
+  // Timeline
+  --timeline-line: #26334D;
+  --timeline-dot:  #00F0FF;
+
+  // Shadows & Neon Glows
+  --shadow-sm:     0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md:     0 4px 20px rgba(255, 0, 122, 0.15), 0 2px 6px rgba(0, 0, 0, 0.6);
+  --shadow-panel:  -8px 0 40px rgba(0, 240, 255, 0.15);
+}
+
 // ── Dark theme ────────────────────────────────────────────────────────────────
 [data-theme="dark"] {
   --bg-app:        #111110;
@@ -95,25 +248,25 @@ $font-main: 'Work Sans', system-ui, sans-serif;
 }
 
 // ── Spacing ───────────────────────────────────────────────────────────────────
-$space-1:  0.25rem;
-$space-2:  0.5rem;
-$space-3:  0.75rem;
-$space-4:  1rem;
-$space-5:  1.25rem;
-$space-6:  1.5rem;
-$space-8:  2rem;
-$space-10: 2.5rem;
-$space-12: 3rem;
-$space-16: 4rem;
+$space-1:  0.25rem;  // 4px
+$space-2:  0.5rem;   // 8px
+$space-3:  0.75rem;  // 12px
+$space-4:  1rem;     // 16px
+$space-5:  1.25rem;  // 20px
+$space-6:  1.5rem;   // 24px
+$space-8:  2rem;     // 32px
+$space-10: 2.5rem;   // 40px
+$space-12: 3rem;     // 48px
+$space-16: 4rem;     // 64px
 
 // ── Type scale ────────────────────────────────────────────────────────────────
-$text-xs:   0.6875rem;   // 11px
-$text-sm:   0.8125rem;   // 13px
-$text-base: 0.9375rem;   // 15px
-$text-lg:   1.0625rem;   // 17px
-$text-xl:   1.25rem;     // 20px
-$text-2xl:  1.625rem;    // 26px
-$text-3xl:  2.25rem;     // 36px
+$text-xs:   0.75rem;   // 12px
+$text-sm:   0.875rem;  // 14px
+$text-base: 1rem;      // 16px
+$text-lg:   1.125rem;  // 18px
+$text-xl:   1.375rem;  // 22px
+$text-2xl:  1.75rem;   // 28px
+$text-3xl:  2.5rem;    // 40px
 
 // ── Radii ─────────────────────────────────────────────────────────────────────
 $radius-sm:   4px;
