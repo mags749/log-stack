@@ -154,6 +154,12 @@ const Settings = (props) => {
               <div class="theme-toggle">
                 <button class={`theme-toggle__btn${theme() === "light" ? " active" : ""}`}
                   onClick={() => setTheme("light")} type="button">☀ Light</button>
+                <button class={`theme-toggle__btn${theme() === "sage" ? " active" : ""}`}
+                  onClick={() => setTheme("sage")} type="button">Sage</button>
+                <button class={`theme-toggle__btn${theme() === "slate" ? " active" : ""}`}
+                  onClick={() => setTheme("slate")} type="button">Slate</button>
+                <button class={`theme-toggle__btn${theme() === "cyberpunk" ? " active" : ""}`}
+                  onClick={() => setTheme("cyberpunk")} type="button">Cyberpunk</button>
                 <button class={`theme-toggle__btn${theme() === "dark" ? " active" : ""}`}
                   onClick={() => setTheme("dark")} type="button">☾ Dark</button>
               </div>

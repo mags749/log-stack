@@ -127,7 +127,7 @@ const LoadingScreen = () => (
   <div style={{
     height: "100vh", display: "flex", "align-items": "center",
     "justify-content": "center", color: "var(--text-muted)",
-    "font-size": "0.875rem", "font-family": "'Work Sans', system-ui, sans-serif",
+    "font-size": "0.875rem", "font-family": "'Red Hat Text', system-ui, sans-serif",
   }}>
     Loading…
   </div>
